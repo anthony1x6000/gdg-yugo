@@ -44,7 +44,9 @@ app.get('/random', async (c) => {
 
     const filterResponse = await fetch(filterUrl.toString());
     if (!filterResponse.ok) {
-      throw new Error('Filter worker failed');
+      const errorText = await filterResponse.text();
+      console.error(`Filter worker failed: ${filterResponse.status} ${errorText}`);
+      throw new Error(`Filter worker failed with status ${filterResponse.status}: ${errorText}`);
     }
 
     const html = await filterResponse.text();
@@ -55,7 +57,12 @@ app.get('/random', async (c) => {
       options
     });
   } catch (error: any) {
-    return c.json({ error: 'Internal Server Error', message: error.message }, 500);
+    console.error('Randomizer Error:', error);
+    return c.json({ 
+      error: 'Internal Server Error', 
+      message: error.message,
+      stack: error.stack
+    }, 500);
   }
 });
 

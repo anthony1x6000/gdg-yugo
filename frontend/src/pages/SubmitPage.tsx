@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { pushSite } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +10,14 @@ import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 export default function SubmitPage() {
   const [address, setAddress] = useState('');
   const [css, setCss] = useState('');
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: pushSite,
     onSuccess: () => {
       setAddress('');
       setCss('');
+      queryClient.invalidateQueries({ queryKey: ['random-site'] });
     },
   });
 
