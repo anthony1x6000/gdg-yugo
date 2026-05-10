@@ -3,12 +3,12 @@
 // export dynamically through wrangler, or we can potentially let users directly
 // add them as a sort of "plugin" system.
 
-import ENTRY, { __INTERNAL_WRANGLER_MIDDLEWARE__ } from "/home/virt/github/gdg-yugo/backend/randomizer/.wrangler/tmp/bundle-QapWyw/middleware-insertion-facade.js";
-import { __facade_invoke__, __facade_register__, Dispatcher } from "/home/virt/github/gdg-yugo/backend/randomizer/node_modules/.pnpm/wrangler@4.90.0_@cloudflare+workers-types@4.20260509.1/node_modules/wrangler/templates/middleware/common.ts";
-import type { WorkerEntrypointConstructor } from "/home/virt/github/gdg-yugo/backend/randomizer/.wrangler/tmp/bundle-QapWyw/middleware-insertion-facade.js";
+import ENTRY, { __INTERNAL_WRANGLER_MIDDLEWARE__ } from "/home/virt/github/gdg-yugo/backend/pusher/.wrangler/tmp/bundle-fla4Cm/middleware-insertion-facade.js";
+import { __facade_invoke__, __facade_register__, Dispatcher } from "/home/virt/github/gdg-yugo/backend/pusher/node_modules/.pnpm/wrangler@4.90.0_@cloudflare+workers-types@4.20260509.1/node_modules/wrangler/templates/middleware/common.ts";
+import type { WorkerEntrypointConstructor } from "/home/virt/github/gdg-yugo/backend/pusher/.wrangler/tmp/bundle-fla4Cm/middleware-insertion-facade.js";
 
 // Preserve all the exports from the worker
-export * from "/home/virt/github/gdg-yugo/backend/randomizer/.wrangler/tmp/bundle-QapWyw/middleware-insertion-facade.js";
+export * from "/home/virt/github/gdg-yugo/backend/pusher/.wrangler/tmp/bundle-fla4Cm/middleware-insertion-facade.js";
 
 class __Facade_ScheduledController__ implements ScheduledController {
 	readonly #noRetry: ScheduledController["noRetry"];

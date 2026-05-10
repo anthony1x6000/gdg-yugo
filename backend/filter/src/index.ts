@@ -40,13 +40,23 @@ app.get('/', async (c) => {
 
     // 2. Click JS Selector if provided (e.g., "Enter" button)
     if (selector) {
+      let cleanSelector = selector;
+      // Handle document.querySelector("...") format if passed literally
+      if (selector.includes('document.querySelector')) {
+        const parts = selector.split(/['"]/);
+        if (parts.length >= 2) {
+          cleanSelector = parts[1];
+        }
+      }
+
       try {
-        await page.waitForSelector(selector, { timeout: 5000 });
-        await page.click(selector);
+        console.log(`Waiting for and clicking selector: ${cleanSelector}`);
+        await page.waitForSelector(cleanSelector, { timeout: 5000 });
+        await page.click(cleanSelector);
         // Wait for potential content change or animation
         await new Promise(r => setTimeout(r, 2000));
       } catch (e: any) {
-        console.warn(`Selector "${selector}" interaction failed or timed out:`, e.message);
+        console.warn(`Selector "${cleanSelector}" interaction failed or timed out:`, e.message);
       }
     }
 

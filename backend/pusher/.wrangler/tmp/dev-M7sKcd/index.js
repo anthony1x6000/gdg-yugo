@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-jxOizE/checked-fetch.js
+// .wrangler/tmp/bundle-fla4Cm/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2217,23 +2217,21 @@ app.post("/push", async (c) => {
     if (!website_address) {
       return c.json({ error: "website_address is required" }, 400);
     }
+    let normalizedAddress = website_address.replace(/:\/\/(www\.)?/, "://");
     try {
-      new URL(website_address);
+      new URL(normalizedAddress);
     } catch (e) {
       return c.json({ error: "Invalid website_address format" }, 400);
     }
     const { success } = await c.env.DB.prepare(
-      "INSERT INTO sites (website_address, css_payload, js_selector) VALUES (?, ?, ?)"
-    ).bind(website_address, css_payload || "", js_selector || "").run();
-    if (success) {
-      return c.json({ message: "Site pushed successfully" }, 201);
-    } else {
-      return c.json({ error: "Failed to push site" }, 500);
-    }
+      `INSERT INTO sites (website_address, css_payload, js_selector) 
+       VALUES (?, ?, ?)
+       ON CONFLICT(website_address) DO UPDATE SET
+       css_payload = excluded.css_payload,
+       js_selector = excluded.js_selector`
+    ).bind(normalizedAddress, css_payload || "", js_selector || "").run();
+    return c.json({ message: "Site pushed/updated successfully" }, success ? 200 : 500);
   } catch (error) {
-    if (error.message.includes("UNIQUE constraint failed")) {
-      return c.json({ error: "Site already exists in database" }, 409);
-    }
     return c.json({ error: "Internal Server Error", message: error.message }, 500);
   }
 });
@@ -2280,7 +2278,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-jxOizE/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-fla4Cm/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -2312,7 +2310,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-jxOizE/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-fla4Cm/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

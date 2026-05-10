@@ -17,26 +17,26 @@ app.post('/push', async (c) => {
       return c.json({ error: 'website_address is required' }, 400);
     }
 
+    // Remove www. from the domain
+    let normalizedAddress = website_address.replace(/:\/\/(www\.)?/, '://');
+
     // Validate URL format
     try {
-      new URL(website_address);
+      new URL(normalizedAddress);
     } catch (e) {
       return c.json({ error: 'Invalid website_address format' }, 400);
     }
 
     const { success } = await c.env.DB.prepare(
-      'INSERT INTO sites (website_address, css_payload, js_selector) VALUES (?, ?, ?)'
-    ).bind(website_address, css_payload || '', js_selector || '').run();
+      `INSERT INTO sites (website_address, css_payload, js_selector) 
+       VALUES (?, ?, ?)
+       ON CONFLICT(website_address) DO UPDATE SET
+       css_payload = excluded.css_payload,
+       js_selector = excluded.js_selector`
+    ).bind(normalizedAddress, css_payload || '', js_selector || '').run();
 
-    if (success) {
-      return c.json({ message: 'Site pushed successfully' }, 201);
-    } else {
-      return c.json({ error: 'Failed to push site' }, 500);
-    }
+    return c.json({ message: 'Site pushed/updated successfully' }, success ? 200 : 500);
   } catch (error: any) {
-    if (error.message.includes('UNIQUE constraint failed')) {
-      return c.json({ error: 'Site already exists in database' }, 409);
-    }
     return c.json({ error: 'Internal Server Error', message: error.message }, 500);
   }
 });
