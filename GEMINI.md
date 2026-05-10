@@ -7,32 +7,26 @@ Website Guessr is a game where users guess a website based on its layout, with a
 
 ## Architecture (Multi-Worker)
 
-The backend is split into two specialized Cloudflare Workers:
+The backend is split into three specialized Cloudflare Workers:
 
 ### 1. Filter Worker (`backend/filter`)
 - **Role:** Pure HTML proxy and CSS injector.
-- **Function:** Fetches a site and injects a CSS payload to hide logos/text.
 - **Input:** `site` URL and optional `css` string.
 
 ### 2. Randomizer Worker (`backend/randomizer`)
-- **Role:** Orchestrator and Game Logic.
-- **Database:** Cloudflare D1 (`gsrsites`).
-- **Function:** 
-  - Picks a random site/CSS pair from D1.
-  - Fetches 3 additional decoy domains.
-  - Calls the Filter worker to get anonymized HTML.
-  - Returns HTML, the correct domain, and 4 shuffled options.
+- **Role:** Game Logic & Selection.
+- **Database:** Reads from Cloudflare D1 (`gsrsites`).
+
+### 3. Pusher Worker (`backend/pusher`)
+- **Role:** Contribution API.
+- **Database:** Writes to Cloudflare D1 (`gsrsites`).
+- **Function:** Allows users to submit new sites and CSS payloads.
 
 ## Tech Stack
-
-### Frontend
-- **React**, **TypeScript**, **TanStack Router/Query**, **Zustand**.
-
-### Backend
-- **Cloudflare Workers** (Hono).
-- **Cloudflare D1** (SQLite).
+- **Frontend:** React, TypeScript, TanStack Router/Query, Zustand.
+- **Backend:** Cloudflare Workers (Hono).
+- **Database:** Cloudflare D1 (SQLite).
 
 ## Development Rules
-- Maintain separation between Game Logic (Randomizer) and Utility (Filter).
-- Use strict TypeScript types.
-- All database interactions must be through the Randomizer worker.
+- Maintain separation between Game Logic (Randomizer), Utility (Filter), and Contributions (Pusher).
+- All D1 writes happen via the Pusher worker.
