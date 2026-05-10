@@ -16,7 +16,7 @@ const CSS_PRESETS = [
     label: 'Standard Package', 
     value: 'img {\n    filter: blur(20px);\n}\n* {\n    font-size: 0px;\n}\nsvg {\n    opacity: 0;\n}' 
   },
-  { label: 'Hide Visuals (Opacity 0)', value: 'img, svg, video, canvas {\n    opacity: 0 !important;\n}' },
+  { label: 'Hide Visuals (Opacity 0)', value: 'img, svg, video, canvas, iframe {\n    opacity: 0 !important;\n}' },
 ];
 
 export default function SubmitPage() {
