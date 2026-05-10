@@ -1,2 +1,2 @@
-export * from './db/schema';
-export * from './auth';
+export * from './db/schema.js';
+export * from './auth/index.js';
