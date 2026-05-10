@@ -66,12 +66,13 @@ export default function GamePage() {
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         )}
-        <iframe
-          srcDoc={data.html}
-          className="w-full h-full border-none pointer-events-none"
-          title="Website Preview"
-          sandbox="allow-same-origin"
-        />
+        <div className="w-full h-full flex items-center justify-center p-4">
+          <img
+            src={data.image}
+            alt="Website Preview"
+            className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
+          />
+        </div>
       </div>
 
       <div className="w-full md:w-80 border-l bg-background p-6 flex flex-col gap-6 overflow-y-auto">

@@ -11,7 +11,7 @@ app.use('*', cors());
 
 app.post('/push', async (c) => {
   try {
-    const { website_address, css_payload } = await c.req.json();
+    const { website_address, css_payload, js_selector } = await c.req.json();
 
     if (!website_address) {
       return c.json({ error: 'website_address is required' }, 400);
@@ -25,8 +25,8 @@ app.post('/push', async (c) => {
     }
 
     const { success } = await c.env.DB.prepare(
-      'INSERT INTO sites (website_address, css_payload) VALUES (?, ?)'
-    ).bind(website_address, css_payload || '').run();
+      'INSERT INTO sites (website_address, css_payload, js_selector) VALUES (?, ?, ?)'
+    ).bind(website_address, css_payload || '', js_selector || '').run();
 
     if (success) {
       return c.json({ message: 'Site pushed successfully' }, 201);

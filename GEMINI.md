@@ -9,9 +9,10 @@ Website Guessr is a game where users guess a website based on its layout, with a
 
 The backend is split into three specialized Cloudflare Workers:
 
-### 1. Filter Worker (`backend/filter`)
-- **Role:** Pure HTML proxy and CSS injector.
-- **Input:** `site` URL and optional `css` string.
+### 1. Filter Service (`backend/filter`)
+- **Role:** Puppeteer-based screenshot service.
+- **Platform:** Node.js (Hono). Run via Docker in development to handle system dependencies.
+- **Input:** `site` URL, optional `css` string, and optional `selector`.
 
 ### 2. Randomizer Worker (`backend/randomizer`)
 - **Role:** Game Logic & Selection.
@@ -24,8 +25,9 @@ The backend is split into three specialized Cloudflare Workers:
 
 ## Tech Stack
 - **Frontend:** React, TypeScript, TanStack Router/Query, Zustand.
-- **Backend:** Cloudflare Workers (Hono).
+- **Backend:** Cloudflare Workers (Hono), Node.js (Filter Service).
 - **Database:** Cloudflare D1 (SQLite).
+- **Dev Ops:** Docker (for Filter Service).
 
 ## Development Rules
 - Maintain separation between Game Logic (Randomizer), Utility (Filter), and Contributions (Pusher).

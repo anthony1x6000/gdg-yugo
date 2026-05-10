@@ -10,6 +10,7 @@ import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 export default function SubmitPage() {
   const [address, setAddress] = useState('');
   const [css, setCss] = useState('');
+  const [selector, setSelector] = useState('');
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -17,6 +18,7 @@ export default function SubmitPage() {
     onSuccess: () => {
       setAddress('');
       setCss('');
+      setSelector('');
       queryClient.invalidateQueries({ queryKey: ['random-site'] });
     },
   });
@@ -30,7 +32,11 @@ export default function SubmitPage() {
       formattedAddress = `https://${formattedAddress}`;
     }
     
-    mutation.mutate({ website_address: formattedAddress, css_payload: css });
+    mutation.mutate({ 
+      website_address: formattedAddress, 
+      css_payload: css,
+      js_selector: selector 
+    });
   };
 
   return (
@@ -60,11 +66,24 @@ export default function SubmitPage() {
               <textarea
                 id="css"
                 placeholder=".logo { display: none; }"
-                className="w-full min-h-[200px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 value={css}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCss(e.target.value)}
                 disabled={mutation.isPending}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="selector">JS Selector to Click (Optional)</Label>
+              <Input
+                id="selector"
+                placeholder="button.orange"
+                value={selector}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelector(e.target.value)}
+                disabled={mutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground">
+                Puppeteer will wait for this selector and click it before taking the screenshot.
+              </p>
             </div>
 
             {mutation.isSuccess && (

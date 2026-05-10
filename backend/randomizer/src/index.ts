@@ -14,7 +14,7 @@ app.get('/random', async (c) => {
   try {
     // 1. Get a random site from D1
     const { results } = await c.env.DB.prepare(
-      'SELECT id, website_address, css_payload FROM sites ORDER BY RANDOM() LIMIT 1'
+      'SELECT id, website_address, css_payload, js_selector FROM sites ORDER BY RANDOM() LIMIT 1'
     ).all();
 
     if (!results || results.length === 0) {
@@ -41,6 +41,9 @@ app.get('/random', async (c) => {
     if (correctSite.css_payload) {
       filterUrl.searchParams.set('css', correctSite.css_payload as string);
     }
+    if (correctSite.js_selector) {
+      filterUrl.searchParams.set('selector', correctSite.js_selector as string);
+    }
 
     const filterResponse = await fetch(filterUrl.toString());
     if (!filterResponse.ok) {
@@ -49,10 +52,14 @@ app.get('/random', async (c) => {
       throw new Error(`Filter worker failed with status ${filterResponse.status}: ${errorText}`);
     }
 
-    const html = await filterResponse.text();
+    const imageBuffer = await filterResponse.arrayBuffer();
+    const base64Image = btoa(
+      new Uint8Array(imageBuffer)
+        .reduce((data, byte) => data + String.fromCharCode(byte), '')
+    );
 
     return c.json({
-      html,
+      image: `data:image/png;base64,${base64Image}`,
       correct_domain: correctSite.website_address,
       options
     });
