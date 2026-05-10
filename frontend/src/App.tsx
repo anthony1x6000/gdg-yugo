@@ -18,7 +18,7 @@ function App() {
             </Link>
           </nav>
         </header>
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden flex flex-col">
           <Routes>
             <Route path="/" element={<GamePage />} />
             <Route path="/submit" element={<SubmitPage />} />

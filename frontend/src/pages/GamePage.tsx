@@ -18,7 +18,6 @@ export default function GamePage() {
     queryKey: ['random-site'],
     queryFn: fetchRandomGame,
     refetchOnWindowFocus: false,
-    staleTime: Infinity,
   });
 
   const handleGuess = () => {
@@ -71,7 +70,7 @@ export default function GamePage() {
           srcDoc={data.html}
           className="w-full h-full border-none pointer-events-none"
           title="Website Preview"
-          sandbox="allow-scripts allow-same-origin"
+          sandbox="allow-same-origin"
         />
       </div>
 
