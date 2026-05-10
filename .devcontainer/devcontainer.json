@@ -1,0 +1,32 @@
+{
+	"name": "Backend Dev Container",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [3000],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "find backend -maxdepth 2 -name package.json -execdir npm install \\;",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode",
+				"firsttris.vscode-jest-runner",
+				"vitest.explorer"
+			]
+		}
+	},
+
+	// [Optional] Remove this property if you want to keep the default as root.
+	"remoteUser": "node"
+}
