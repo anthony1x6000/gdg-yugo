@@ -1,69 +1,73 @@
-# Frontend Setup Guide
+# React + TypeScript + Vite
 
-This document explains how to set up and run the Website Guessr frontend application locally for development.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Tech Stack Overview
+Currently, two official plugins are available:
 
-The frontend is built using:
-- **React** with **TypeScript**
-- **Vite** as the build tool and development server
-- **TanStack Router** for routing
-- **TanStack Query** for data fetching
-- **Zustand** for state management
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Prerequisites
+## React Compiler
 
-Ensure you have Node.js installed on your machine. This project uses `pnpm` for package management. 
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-To install `pnpm` globally (if you haven't already):
-```bash
-npm install -g pnpm
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## 1. Install Dependencies
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-Navigate to the `frontend` directory and install the necessary dependencies:
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-```bash
-cd frontend
-pnpm install
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-## 2. Environment Variables
-
-If there is a `.env.example` file in the `frontend` directory, copy it to `.env.local` or `.env` and fill in any required configuration values (such as the backend API URL).
-
-```bash
-cp .env.example .env.local
-```
-
-## 3. Starting the Development Server
-
-To start the local development server with Hot Module Replacement (HMR), run:
-
-```bash
-pnpm run dev
-```
-
-This command will typically start the application using Vite. You will see output in the terminal indicating the local URL where the app is running (usually `http://localhost:5173`).
-
-Open that URL in your browser to view the application.
-
-## 4. Building for Production
-
-When you are ready to deploy the frontend to your VPS or a static hosting provider, you need to create an optimized production build.
-
-```bash
-pnpm run build
-```
-
-This will generate a `dist/` directory containing the minified and bundled static assets that can be served by Nginx, Caddy, or any other web server.
-
-## Summary of Commands
-
-| Command | Description |
-|---------|-------------|
-| `pnpm install` | Installs all project dependencies. |
-| `pnpm run dev` | Starts the local development server (Vite). |
-| `pnpm run build` | Creates a production-ready build in the `dist` directory. |
-| `pnpm run preview` | Previews the production build locally. |
