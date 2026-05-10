@@ -1,1 +1,1 @@
-export * from '../../../middleware/src/db/schema';
+export * from '../../../middleware/src/db/schema.js';
