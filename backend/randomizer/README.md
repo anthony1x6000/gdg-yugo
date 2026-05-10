@@ -26,20 +26,24 @@ wrangler d1 execute gsrsites --remote --file=schema.sql
 
 ### 3. Configure the Filter URL
 In `wrangler.toml`, ensure `FILTER_URL` points to your deployed `filter` worker URL (or `http://localhost:8787` for local testing).
+## Database Setup
+
+To initialize or reset your local D1 database (useful if you encounter schema errors like missing columns):
+
+```bash
+npm run init-db
+```
+
+This will recreate the `sites` table with the latest schema and seed data.
 
 ## Development
 
 Run the development server:
+
 ```bash
 pnpm run dev
 ```
 
-## Deployment
-
-Deploy to Cloudflare Workers:
-```bash
-pnpm run deploy
-```
 
 ## API Endpoints
 
