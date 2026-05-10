@@ -7,11 +7,30 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
+const CSS_PRESETS = [
+  { label: 'Custom', value: '' },
+  { label: 'Blur Images (20px)', value: 'img {\n    filter: blur(20px);\n}' },
+  { label: 'Blur Everything (20px)', value: '* {\n    filter: blur(20px);\n}' },
+  { label: 'Font Size 0', value: '* {\n    font-size: 0px;\n}' },
+  { 
+    label: 'Standard Package', 
+    value: 'img {\n    filter: blur(20px);\n}\n* {\n    font-size: 0px;\n}\nsvg {\n    opacity: 0;\n}' 
+  },
+  { label: 'Hide Visuals (Opacity 0)', value: 'img, svg, video, canvas {\n    opacity: 0 !important;\n}' },
+];
+
 export default function SubmitPage() {
   const [address, setAddress] = useState('');
   const [css, setCss] = useState('');
   const [selector, setSelector] = useState('');
   const queryClient = useQueryClient();
+
+  const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val) {
+      setCss((prev) => (prev ? `${prev}\n${val}` : val));
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: pushSite,
@@ -31,6 +50,9 @@ export default function SubmitPage() {
     if (!formattedAddress.startsWith('http://') && !formattedAddress.startsWith('https://')) {
       formattedAddress = `https://${formattedAddress}`;
     }
+    
+    // Remove www. for consistency
+    formattedAddress = formattedAddress.replace(/:\/\/(www\.)?/, '://');
     
     mutation.mutate({ 
       website_address: formattedAddress, 
@@ -60,6 +82,22 @@ export default function SubmitPage() {
                 required
                 disabled={mutation.isPending}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="presets">CSS Presets</Label>
+              <select
+                id="presets"
+                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={handlePresetChange}
+                disabled={mutation.isPending}
+                defaultValue=""
+              >
+                {CSS_PRESETS.map((preset) => (
+                  <option key={preset.label} value={preset.value}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="css">CSS Payload (Optional)</Label>
