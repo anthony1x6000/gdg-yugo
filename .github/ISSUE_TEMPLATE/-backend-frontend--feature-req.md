@@ -1,10 +1,8 @@
 ---
-name: "[backend,frontend,middleware] Feature req"
+name: "[backend,frontend] Feature req"
 about: feature rq
 title: ''
 labels: ''
 assignees: ''
 
 ---
-
-
