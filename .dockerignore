@@ -2,5 +2,5 @@ node_modules
 dist
 .git
 .devcontainer
-backend/scraper/node_modules
-backend/scraper/dist
+backend/node_modules
+backend/dist

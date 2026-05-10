@@ -1,7 +1,7 @@
 {
-  "name": "scraper",
+  "name": "backend",
   "version": "1.0.0",
-  "description": "Cloudflare Worker based Scraper with D1 and Drizzle",
+  "description": "Cloudflare Worker based Edge Server and Scraper",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
     "node": ">=22.22.2"
   },
   "dependencies": {
-    "@yugo/middleware": "link:../middleware",
+    "better-auth": "latest",
     "cheerio": "^1.2.0",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.18"

@@ -1,153 +1,122 @@
-# Scraper Service API Documentation
+# Cloudflare & Wrangler Setup Guide
 
-The Scraper Service is a Cloudflare Worker that handles web scraping, CSS injection, user highscores, leaderboards, and site rules for the Website Guessr game.
+This document provides a comprehensive guide on how to configure, develop, and deploy the `scraper` backend to Cloudflare Workers using the Wrangler CLI. It also covers the setup and migration of the Cloudflare D1 database.
 
-## Base URL
+## Prerequisites
 
-When running locally: `http://localhost:8787` (or your configured port).
-In production, it will be your deployed Cloudflare Worker URL.
+Ensure you have Node.js and `npm` (or `pnpm`) installed. The project dependencies should already be installed via:
 
-## Endpoints
-
----
-
-### 1. Scrape Website
-Fetches the HTML from a provided URL and returns the raw content with optional CSS injection. 
-It automatically checks the `site_cleaner_rules` table for the domain and injects the rules if found, unless the `css` query parameter is explicitly provided.
-
-* **URL:** `/scrape`
-* **Method:** `GET`
-* **Query Parameters:**
-  * `url` (string, **required**): The full URL of the website to scrape.
-  * `css` (string, optional): CSS payload to inject. Overrides any database rules for the domain.
-
-#### Example: Basic Scrape
 ```bash
-curl "http://localhost:8787/scrape?url=https://example.com"
+pnpm install
 ```
 
-#### Example: Scrape with Custom CSS Injection
+Wrangler is the official Cloudflare developer CLI. It is installed as a development dependency. To run it, prefix commands with `npx` or use your package manager (e.g., `npx wrangler` or `pnpm exec wrangler`).
+
+## 1. Authenticate with Cloudflare
+
+Before creating resources or deploying, you need to log in to your Cloudflare account.
+
 ```bash
-curl "http://localhost:8787/scrape?url=https://example.com&css=body%20%7B%20display%3A%20none%3B%20%7D"
+npx wrangler login
 ```
 
-#### Example Response (200 OK)
-Returns the raw `text/html` of the scraped site with the injected `<style>` tag.
+This command will open a browser window and prompt you to authorize Wrangler to access your Cloudflare account.
 
-#### Example Error Response (400 Bad Request)
-```json
-{
-  "error": "URL is required"
-}
-```
+## 2. Set Up Cloudflare D1 (Database)
 
----
+The project uses Cloudflare D1 (a serverless SQLite database) and Drizzle ORM.
 
-### 2. Update Highscore
-Updates the current authenticated user's highscore, but only if the provided score is strictly greater than their current highscore.
+### Create the Remote Database
 
-* **URL:** `/highscore`
-* **Method:** `POST`
-* **Headers:**
-  * Requires authentication headers (handled by `better-auth`).
-* **Body:** JSON
-  * `score` (number, **required**): The player's new score.
+Run the following command to create a new D1 database named `site-rules-db` (as configured in `wrangler.toml`):
 
-#### Example Request
 ```bash
-curl -X POST "http://localhost:8787/highscore" \
-  -H "Content-Type: application/json" \
-  -H "Cookie: better-auth.session_token=YOUR_SESSION_TOKEN" \
-  -d '{"score": 42}'
+npx wrangler d1 create site-rules-db
 ```
 
-#### Example Responses
+The output will look something like this:
 
-**Success - Highscore Updated (200 OK)**
-```json
-{
-  "message": "Highscore updated",
-  "newHighscore": 42
-}
+```text
+✅ Successfully created DB 'site-rules-db' in region EEUR
+Created your database using D1's new storage backend. The new storage backend is not yet recommended for production workloads, but backs up your data via point-in-time recovery.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "site-rules-db"
+database_id = "xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxx"
 ```
 
-**Success - Score Not High Enough (200 OK)**
-```json
-{
-  "message": "Score not high enough",
-  "currentHighscore": 50
-}
+### Update `wrangler.toml`
+
+Copy the `database_id` from the output above and update your `backend/wrangler.toml` file to replace `YOUR_DATABASE_ID_HERE`:
+
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "site-rules-db"
+database_id = "YOUR_NEW_DATABASE_ID"
 ```
 
-**Error - Unauthorized (401 Unauthorized)**
-```json
-{
-  "error": "Unauthorized"
-}
-```
+## 3. Database Migrations (Drizzle ORM)
 
----
+The project uses Drizzle ORM to manage the database schema. Drizzle generates SQL migration files located in the `drizzle/` directory.
 
-### 3. Get Leaderboard
-Fetches the top 10 users with the highest scores.
+### Apply Migrations Locally
 
-* **URL:** `/leaderboard`
-* **Method:** `GET`
+To apply the migrations to your local development database (for testing with `wrangler dev`):
 
-#### Example Request
 ```bash
-curl "http://localhost:8787/leaderboard"
+npx wrangler d1 migrations apply site-rules-db --local
 ```
 
-#### Example Response (200 OK)
-```json
-[
-  {
-    "username": "PlayerOne",
-    "profilePictureUrl": "https://example.com/p1.jpg",
-    "highscore": 999
-  },
-  {
-    "username": "PlayerTwo",
-    "profilePictureUrl": null,
-    "highscore": 850
-  }
-]
-```
+### Apply Migrations Remotely (Production)
 
----
+Once you are ready to deploy to production, apply the migrations to the live Cloudflare D1 database:
 
-### 4. Create or Update Site Rule
-Adds or updates a CSS injection rule for a specific domain. Both authenticated users and guests can submit rules, though the `createdBy` field will be null for guests.
-
-* **URL:** `/rules`
-* **Method:** `POST`
-* **Body:** JSON
-  * `domain` (string, **required**): The domain name (e.g., `google.com`).
-  * `cssInjection` (string, **required**): The CSS code to hide logos, text, etc.
-  * `isActive` (boolean, optional): Whether the rule should be active. Defaults to `true`.
-
-#### Example Request
 ```bash
-curl -X POST "http://localhost:8787/rules" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "domain": "news.ycombinator.com",
-    "cssInjection": "img, .votearrow { display: none !important; }",
-    "isActive": true
-  }'
+npx wrangler d1 migrations apply site-rules-db --remote
 ```
 
-#### Example Response (200 OK)
-```json
-{
-  "message": "Rule saved successfully"
-}
+## 4. Local Development
+
+You can run the worker locally. Wrangler will simulate the Cloudflare Worker environment and automatically use a local version of the D1 database.
+
+```bash
+npx wrangler dev
 ```
 
-#### Example Error Response (400 Bad Request)
-```json
-{
-  "error": "Domain and CSS injection required"
-}
+This starts a local server (usually on `http://localhost:8787`). Any changes you make to `src/index.ts` or other files will be live-reloaded.
+
+*(Note: If you need your local environment to connect to the actual remote D1 database instead of the local simulation, run `npx wrangler dev --remote`.)*
+
+## 5. Type Generation
+
+Whenever you update bindings in `wrangler.toml` (e.g., adding KV namespaces, R2 buckets, or changing D1 configurations), you should regenerate the TypeScript definitions so your editor provides accurate auto-completion.
+
+```bash
+npx wrangler types
 ```
+
+This generates or updates the `worker-configuration.d.ts` file.
+
+## 6. Deployment
+
+Deploying your Worker to Cloudflare's edge network is straightforward. Make sure you have applied your remote D1 migrations first.
+
+```bash
+npx wrangler deploy
+```
+
+Wrangler will bundle your code, upload it to Cloudflare, and provide you with a live URL (e.g., `https://scraper.<your-subdomain>.workers.dev`).
+
+## Summary of Useful Commands
+
+| Task | Command |
+|------|---------|
+| **Start Local Server** | `npx wrangler dev` |
+| **Create DB** | `npx wrangler d1 create site-rules-db` |
+| **Local Migrations** | `npx wrangler d1 migrations apply site-rules-db --local` |
+| **Remote Migrations** | `npx wrangler d1 migrations apply site-rules-db --remote` |
+| **Generate Types** | `npx wrangler types` |
+| **Deploy to Production** | `npx wrangler deploy` |
+| **View Live Logs** | `npx wrangler tail` |

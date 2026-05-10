@@ -1,6 +1,6 @@
 import { app } from './base.js';
 import { drizzle } from 'drizzle-orm/d1';
-import * as schema from '@yugo/middleware';
+import * as schema from '../db/schema.js';
 import { desc } from 'drizzle-orm';
 
 app.get('/leaderboard', async (c: any) => {

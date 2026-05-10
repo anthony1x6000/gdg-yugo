@@ -47,7 +47,7 @@ The Drizzle client is initialized within the route handlers using the Cloudflare
 
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
-import * as schema from '@yugo/middleware';
+import * as schema from './src/db/schema.js';
 
 // Inside a Hono route or fetch handler:
 const db = drizzle(c.env.DB, { schema });
@@ -65,7 +65,7 @@ This example checks if a user's new score is higher than their current highscore
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
-import * as schema from '@yugo/middleware';
+import * as schema from './src/db/schema.js';
 
 const db = drizzle(env.DB, { schema });
 const newScore = 150;
@@ -90,7 +90,7 @@ This query retrieves the top 10 users with the highest scores, returning only th
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
 import { desc } from 'drizzle-orm';
-import * as schema from '@yugo/middleware';
+import * as schema from './src/db/schema.js';
 
 const db = drizzle(env.DB, { schema });
 
@@ -110,7 +110,7 @@ When a user submits a rule, we insert it, or update it if a rule for that domain
 
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
-import * as schema from '@yugo/middleware';
+import * as schema from './src/db/schema.js';
 
 const db = drizzle(env.DB, { schema });
 const domain = "reddit.com";
@@ -140,7 +140,7 @@ When scraping a URL, we need to find if there is an active rule for that domain.
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, and } from 'drizzle-orm';
-import * as schema from '@yugo/middleware';
+import * as schema from './src/db/schema.js';
 
 const db = drizzle(env.DB, { schema });
 const targetDomain = "github.com";
