@@ -19,8 +19,10 @@
     "node": ">=22.22.2"
   },
   "dependencies": {
+    "@yugo/middleware": "link:../middleware",
     "cheerio": "^1.2.0",
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.18"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240502.0",
