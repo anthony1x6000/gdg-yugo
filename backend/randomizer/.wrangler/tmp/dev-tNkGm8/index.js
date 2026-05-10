@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-UUpCUW/checked-fetch.js
+// .wrangler/tmp/bundle-kVzyMn/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2210,7 +2210,13 @@ var cors = /* @__PURE__ */ __name((options) => {
 
 // src/index.ts
 var app = new Hono2();
-app.use("*", cors());
+app.use("*", cors({
+  origin: "*",
+  allowMethods: ["*"],
+  allowHeaders: ["*"],
+  exposeHeaders: ["*"],
+  maxAge: 86400
+}));
 app.get("/random", async (c) => {
   try {
     const { results } = await c.env.DB.prepare(
@@ -2220,7 +2226,7 @@ app.get("/random", async (c) => {
       return c.json({ error: "No sites found in database" }, 404);
     }
     const correctSite = results[0];
-    const cacheKey = `site-${correctSite.id}-${correctSite.updated_at.replace(/[: -]/g, "")}.png`;
+    const cacheKey = `site-${correctSite.id}-${(correctSite.updated_at || "").replace(/[: -]/g, "")}.png`;
     let imageBuffer;
     if (c.env.SCREENSHOTS) {
       const cached = await c.env.SCREENSHOTS.get(cacheKey);
@@ -2230,8 +2236,9 @@ app.get("/random", async (c) => {
       }
     }
     if (!imageBuffer) {
-      console.log(`Cache miss for ${correctSite.website_address}, calling filter...`);
-      const filterUrl = new URL(c.env.FILTER_URL);
+      const targetFilterUrl = c.env.FILTER_URL || "http://34.121.33.153:8789/";
+      console.log(`Cache miss for ${correctSite.website_address}, calling filter at ${targetFilterUrl}...`);
+      const filterUrl = new URL(targetFilterUrl);
       filterUrl.searchParams.set("site", correctSite.website_address);
       if (correctSite.css_payload) {
         filterUrl.searchParams.set("css", correctSite.css_payload);
@@ -2319,7 +2326,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-UUpCUW/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-kVzyMn/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -2351,7 +2358,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-UUpCUW/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-kVzyMn/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

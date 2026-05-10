@@ -5,7 +5,13 @@ import puppeteer from 'puppeteer';
 
 const app = new Hono();
 
-app.use('*', cors());
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['*'],
+  allowHeaders: ['*'],
+  exposeHeaders: ['*'],
+  maxAge: 86400,
+}));
 
 app.get('/', async (c) => {
   const targetUrl = c.req.query('site');
