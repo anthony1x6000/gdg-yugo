@@ -3,13 +3,19 @@ import { cors } from 'hono/cors';
 
 export interface Env {
   DB: D1Database;
-  FILTER_URL: string;
+  FILTER_URL?: string;
   SCREENSHOTS: R2Bucket;
 }
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.use('*', cors());
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['*'],
+  allowHeaders: ['*'],
+  exposeHeaders: ['*'],
+  maxAge: 86400,
+}));
 
 app.get('/random', async (c) => {
   try {
@@ -25,7 +31,7 @@ app.get('/random', async (c) => {
     const correctSite = results[0];
 
     // 2. Check R2 Cache
-    const cacheKey = `site-${correctSite.id}-${(correctSite.updated_at as string).replace(/[: -]/g, '')}.png`;
+    const cacheKey = `site-${correctSite.id}-${(correctSite.updated_at as string || '').replace(/[: -]/g, '')}.png`;
     let imageBuffer: ArrayBuffer | undefined;
 
     if (c.env.SCREENSHOTS) {
@@ -38,8 +44,9 @@ app.get('/random', async (c) => {
 
     // 3. Call filter worker if no cache hit
     if (!imageBuffer) {
-      console.log(`Cache miss for ${correctSite.website_address}, calling filter...`);
-      const filterUrl = new URL(c.env.FILTER_URL);
+      const targetFilterUrl = c.env.FILTER_URL || 'http://34.121.33.153:8789/';
+      console.log(`Cache miss for ${correctSite.website_address}, calling filter at ${targetFilterUrl}...`);
+      const filterUrl = new URL(targetFilterUrl);
       filterUrl.searchParams.set('site', correctSite.website_address as string);
       if (correctSite.css_payload) {
         filterUrl.searchParams.set('css', correctSite.css_payload as string);
