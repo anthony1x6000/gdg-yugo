@@ -22,7 +22,13 @@ export default function SubmitPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!address) return;
-    mutation.mutate({ website_address: address, css_payload: css });
+    
+    let formattedAddress = address.trim();
+    if (!formattedAddress.startsWith('http://') && !formattedAddress.startsWith('https://')) {
+      formattedAddress = `https://${formattedAddress}`;
+    }
+    
+    mutation.mutate({ website_address: formattedAddress, css_payload: css });
   };
 
   return (

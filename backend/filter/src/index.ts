@@ -17,6 +17,15 @@ app.get('/', async (c) => {
     
     let finalHtml = await response.text();
     
+    // 1. Inject <base> tag to fix relative URLs
+    const baseTag = `<base href="${targetUrl}">`;
+    if (finalHtml.includes('<head>')) {
+      finalHtml = finalHtml.replace('<head>', '<head>' + baseTag);
+    } else {
+      finalHtml = baseTag + finalHtml;
+    }
+
+    // 2. Inject CSS Payload
     if (cssToInject) {
       const styleTag = `
 <style>
