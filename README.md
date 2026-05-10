@@ -9,6 +9,20 @@ The project uses a dual-worker setup on Cloudflare Workers:
 - **Filter Worker:** Handles HTML scraping and CSS injection.
 - **Randomizer Worker:** Manages game state, multiple-choice options, and D1 database integration.
 
+# database view
+
+Here is what the database looks like on cloudflare. We use cloudflare d1 to store everything.
+<img src="https://github.com/anthony1x6000/gdg-yugo/blob/main/frontend/src/assets/image.png?raw=true" />
+
+# Runner under google cloud 
+
+We use a vm, we tried to use google cloud run for scaleability, but we encountered too many issues with that.
+
+![alt text](frontend/src/assets/gsc-c.png)
+
+The rest of the project is hosted on cloudflare workers/pages. Additionally, we use r2 buckets (basically amazon s3 buckets) to store cached images, so pupeteer does not need to run every time, even after a site has been crawled. 
+
+
 ## Getting Started
 
 ### Database Setup
