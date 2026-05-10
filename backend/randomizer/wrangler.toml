@@ -1,0 +1,12 @@
+name = "randomizer"
+main = "src/index.ts"
+compatibility_date = "2024-05-10"
+compatibility_flags = [ "nodejs_compat" ]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gsrsites"
+database_id = "97bc1463-fffd-47ce-b6cd-1a392779fa13"
+
+[vars]
+FILTER_URL = "https://backend.quieting.workers.dev/"

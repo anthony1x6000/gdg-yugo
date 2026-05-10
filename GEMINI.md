@@ -3,25 +3,36 @@
 This document outlines the architecture, tech stack, and conventions for the Website Guessr project.
 
 ## Project Overview
-Website Guessr is a game where users guess a website based on its layout, with all images, icons, logos, and text stripped out.
+Website Guessr is a game where users guess a website based on its layout, with all identifying features stripped out.
 
-## Features
-- **Gameplay:** Guess the website from its bare layout.
-- **Scraper:** A simple backend function that returns anonymized HTML of a site for guessing.
+## Architecture (Multi-Worker)
 
-## Tech Stack & Conventions
+The backend is split into two specialized Cloudflare Workers:
+
+### 1. Filter Worker (`backend/filter`)
+- **Role:** Pure HTML proxy and CSS injector.
+- **Function:** Fetches a site and injects a CSS payload to hide logos/text.
+- **Input:** `site` URL and optional `css` string.
+
+### 2. Randomizer Worker (`backend/randomizer`)
+- **Role:** Orchestrator and Game Logic.
+- **Database:** Cloudflare D1 (`gsrsites`).
+- **Function:** 
+  - Picks a random site/CSS pair from D1.
+  - Fetches 3 additional decoy domains.
+  - Calls the Filter worker to get anonymized HTML.
+  - Returns HTML, the correct domain, and 4 shuffled options.
+
+## Tech Stack
 
 ### Frontend
-- **React**: Core UI framework.
-- **TypeScript**: Strict typing is enforced.
-- **TanStack Router**: Used for all client-side routing.
-- **TanStack Query**: Used for data fetching, caching, and synchronization.
-- **Zustand**: Used for local state management.
+- **React**, **TypeScript**, **TanStack Router/Query**, **Zustand**.
 
 ### Backend
-- **Cloudflare Workers**: Handles scraping and HTML proxying.
-- **TypeScript**: Strict typing across all backend worker scripts.
+- **Cloudflare Workers** (Hono).
+- **Cloudflare D1** (SQLite).
 
 ## Development Rules
-- Enforce strict TypeScript types.
-- Maintain a clear separation between frontend components and backend logic.
+- Maintain separation between Game Logic (Randomizer) and Utility (Filter).
+- Use strict TypeScript types.
+- All database interactions must be through the Randomizer worker.
