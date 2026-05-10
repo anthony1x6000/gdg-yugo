@@ -12,5 +12,4 @@ CREATE TABLE IF NOT EXISTS sites (
 -- Seed Data (YouTube and Pornhub only)
 DELETE FROM sites;
 INSERT OR IGNORE INTO sites (website_address, css_payload, js_selector) VALUES 
-('https://youtube.com', '#masthead-container, #guide-content { display: none !important; }', NULL),
-('https://pornhub.com', '.header-wrapper, .footer-container { display: none !important; }', 'button.orange');
+('https://youtube.com', '#masthead-container, #guide-content { display: none !important; }', NULL);
