@@ -42,6 +42,9 @@ export default {
       });
 
       // 2. Fetch the website
+      // Note: Cloudflare Workers fetch doesn't support maxRedirects directly in the same way as axios,
+      // but by default it follows redirects up to 20 times (or can be set to 'manual').
+      // We will keep default redirect behavior for now unless requested otherwise.
       const response = await fetch(targetUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
