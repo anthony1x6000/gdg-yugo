@@ -18,7 +18,7 @@ mkdir -p "$PERSIST_PATH"
 
 # 0. Initialize Shared D1 Database
 echo "Initializing shared local database..."
-(cd backend/randomizer && npx wrangler d1 execute gsrsites --local --persist-to "$PERSIST_PATH" --file ./schema.sql --yes)
+(cd backend/randomizer && npm run init-db)
 
 # 1. Start Filter Service (Port 8789) - Running in Docker to handle Puppeteer dependencies
 echo "Starting Filter Service in Docker on http://127.0.0.1:8789"
