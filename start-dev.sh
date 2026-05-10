@@ -3,6 +3,7 @@
 # Kill all background processes on exit
 cleanup() {
     echo "Stopping all services..."
+    docker stop filter-container 2>/dev/null && docker rm filter-container 2>/dev/null
     kill $(jobs -p) 2>/dev/null
     exit
 }
@@ -19,9 +20,11 @@ mkdir -p "$PERSIST_PATH"
 echo "Initializing shared local database..."
 (cd backend/randomizer && npx wrangler d1 execute gsrsites --local --persist-to "$PERSIST_PATH" --file ./schema.sql --yes)
 
-# 1. Start Filter Worker (Port 8789)
-echo "Starting Filter Worker on http://127.0.0.1:8789"
-(cd backend/filter && npx wrangler dev --port 8789 --inspector-port 9231 --persist-to "$PERSIST_PATH") &
+# 1. Start Filter Service (Port 8789) - Running in Docker to handle Puppeteer dependencies
+echo "Starting Filter Service in Docker on http://127.0.0.1:8789"
+(cd backend/filter && docker build -t filter-service . && docker rm -f filter-container 2>/dev/null || true && docker run -d -p 8789:8789 --name filter-container filter-service)
+# Give it a moment to start
+sleep 5
 
 # 2. Start Randomizer Worker (Port 8787)
 # Overriding FILTER_URL to point to local filter worker

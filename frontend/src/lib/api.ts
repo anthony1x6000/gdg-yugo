@@ -2,7 +2,7 @@ const RANDOMIZER_URL = import.meta.env.VITE_RANDOMIZER_URL || 'http://localhost:
 const PUSHER_URL = import.meta.env.VITE_PUSHER_URL || 'http://localhost:8788';
 
 export interface GameData {
-  html: string;
+  image: string;
   correct_domain: string;
   options: string[];
 }
@@ -13,7 +13,7 @@ export const fetchRandomGame = async (): Promise<GameData> => {
   return res.json();
 };
 
-export const pushSite = async (data: { website_address: string; css_payload?: string }) => {
+export const pushSite = async (data: { website_address: string; css_payload?: string; js_selector?: string }) => {
   const res = await fetch(`${PUSHER_URL}/push`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
