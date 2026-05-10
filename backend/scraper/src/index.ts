@@ -36,6 +36,7 @@ fastify.get('/scrape', {
     // Fetch the website (This is your 'wget' replacement)
     // We use a custom User-Agent to avoid being blocked by some websites
     const { data: rawHtml } = await axios.get(url, {
+      maxRedirects: 0,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }
