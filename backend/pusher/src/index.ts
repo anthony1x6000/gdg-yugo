@@ -32,7 +32,8 @@ app.post('/push', async (c) => {
        VALUES (?, ?, ?)
        ON CONFLICT(website_address) DO UPDATE SET
        css_payload = excluded.css_payload,
-       js_selector = excluded.js_selector`
+       js_selector = excluded.js_selector,
+       updated_at = CURRENT_TIMESTAMP`
     ).bind(normalizedAddress, css_payload || '', js_selector || '').run();
 
     return c.json({ message: 'Site pushed/updated successfully' }, success ? 200 : 500);

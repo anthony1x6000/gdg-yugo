@@ -1,63 +1,38 @@
-# Use an official Node runtime as a parent image
-FROM node:22-slim
+# Stage 1: Build
+FROM node:22-alpine AS builder
+WORKDIR /usr/src/app
+COPY package*.json ./
+# Puppeteer installation is skipped because we use system chromium in the final stage
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+# Install all dependencies (including devDependencies like typescript)
+RUN npm install
+COPY . .
+# Compile TypeScript to JavaScript
+RUN npx tsc
 
-# Install necessary system dependencies for Puppeteer/Chrome
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-      ca-certificates \
-      fonts-liberation \
-      libasound2 \
-      libatk-bridge2.0-0 \
-      libatk1.0-0 \
-      libc6 \
-      libcairo2 \
-      libcups2 \
-      libdbus-1-3 \
-      libexpat1 \
-      libfontconfig1 \
-      libgbm1 \
-      libgcc1 \
-      libglib2.0-0 \
-      libgtk-3-0 \
-      libnspr4 \
-      libnss3 \
-      libpango-1.0-0 \
-      libpangocairo-1.0-0 \
-      libstdc++6 \
-      libx11-6 \
-      libx11-xcb1 \
-      libxcb1 \
-      libxcomposite1 \
-      libxcursor1 \
-      libxdamage1 \
-      libxext6 \
-      libxfixes3 \
-      libxi6 \
-      libxrandr2 \
-      libxrender1 \
-      libxss1 \
-      libxtst6 \
-      lsb-release \
-      wget \
-      xdg-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create app directory
+# Stage 2: Final Image
+FROM node:22-alpine
 WORKDIR /usr/src/app
 
-# Set environment variable to store Puppeteer's Chrome in a known location
-ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
+# Install Chromium and necessary libraries
+RUN apk add --no-cache \
+      chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ca-certificates \
+      ttf-freefont
 
-# Install app dependencies
+# Copy only the production dependencies from the builder
 COPY package*.json ./
-# Running npm install will trigger the 'postinstall' script which downloads Chrome
-RUN npm install
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+RUN npm install --production
 
-# Bundle app source
-COPY . .
+# Copy compiled JavaScript from builder
+COPY --from=builder /usr/src/app/dist ./dist
 
-# Expose the port the app runs on
+# Environment variables for Puppeteer
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 EXPOSE 8789
-
-# Start the app
-CMD [ "npm", "start" ]
+CMD [ "node", "dist/index.js" ]

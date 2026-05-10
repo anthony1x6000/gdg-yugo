@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS sites (
   website_address TEXT NOT NULL UNIQUE,
   css_payload TEXT,
   js_selector TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Seed Data (YouTube and Pornhub only)

@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 export interface Env {
   DB: D1Database;
   FILTER_URL: string;
+  SCREENSHOTS: R2Bucket;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -14,7 +15,7 @@ app.get('/random', async (c) => {
   try {
     // 1. Get a random site from D1
     const { results } = await c.env.DB.prepare(
-      'SELECT id, website_address, css_payload, js_selector FROM sites ORDER BY RANDOM() LIMIT 1'
+      'SELECT id, website_address, css_payload, js_selector, updated_at FROM sites ORDER BY RANDOM() LIMIT 1'
     ).all();
 
     if (!results || results.length === 0) {
@@ -23,7 +24,52 @@ app.get('/random', async (c) => {
 
     const correctSite = results[0];
 
-    // 2. Get 3 additional random sites for options (total 4 choices)
+    // 2. Check R2 Cache
+    const cacheKey = `site-${correctSite.id}-${(correctSite.updated_at as string).replace(/[: -]/g, '')}.png`;
+    let imageBuffer: ArrayBuffer | undefined;
+
+    if (c.env.SCREENSHOTS) {
+      const cached = await c.env.SCREENSHOTS.get(cacheKey);
+      if (cached) {
+        console.log(`Cache hit for ${correctSite.website_address}`);
+        imageBuffer = await cached.arrayBuffer();
+      }
+    }
+
+    // 3. Call filter worker if no cache hit
+    if (!imageBuffer) {
+      console.log(`Cache miss for ${correctSite.website_address}, calling filter...`);
+      const filterUrl = new URL(c.env.FILTER_URL);
+      filterUrl.searchParams.set('site', correctSite.website_address as string);
+      if (correctSite.css_payload) {
+        filterUrl.searchParams.set('css', correctSite.css_payload as string);
+      }
+      if (correctSite.js_selector) {
+        filterUrl.searchParams.set('selector', correctSite.js_selector as string);
+      }
+
+      const filterResponse = await fetch(filterUrl.toString());
+      if (!filterResponse.ok) {
+        const errorText = await filterResponse.text();
+        throw new Error(`Filter worker failed with status ${filterResponse.status}: ${errorText}`);
+      }
+
+      imageBuffer = await filterResponse.arrayBuffer();
+
+      // Store in R2 (background)
+      if (c.env.SCREENSHOTS) {
+        c.executionCtx.waitUntil(
+          c.env.SCREENSHOTS.put(cacheKey, imageBuffer)
+        );
+      }
+    }
+
+    const base64Image = btoa(
+      new Uint8Array(imageBuffer!)
+        .reduce((data, byte) => data + String.fromCharCode(byte), '')
+    );
+
+    // 4. Get 3 additional random sites for options (total 4 choices)
     const { results: optionsResults } = await c.env.DB.prepare(
       'SELECT website_address FROM sites WHERE id != ? ORDER BY RANDOM() LIMIT 3'
     ).bind(correctSite.id).all();
@@ -34,29 +80,6 @@ app.get('/random', async (c) => {
       const j = Math.floor(Math.random() * (i + 1));
       [options[i], options[j]] = [options[j], options[i]];
     }
-
-    // 3. Call the filter worker
-    const filterUrl = new URL(c.env.FILTER_URL);
-    filterUrl.searchParams.set('site', correctSite.website_address as string);
-    if (correctSite.css_payload) {
-      filterUrl.searchParams.set('css', correctSite.css_payload as string);
-    }
-    if (correctSite.js_selector) {
-      filterUrl.searchParams.set('selector', correctSite.js_selector as string);
-    }
-
-    const filterResponse = await fetch(filterUrl.toString());
-    if (!filterResponse.ok) {
-      const errorText = await filterResponse.text();
-      console.error(`Filter worker failed: ${filterResponse.status} ${errorText}`);
-      throw new Error(`Filter worker failed with status ${filterResponse.status}: ${errorText}`);
-    }
-
-    const imageBuffer = await filterResponse.arrayBuffer();
-    const base64Image = btoa(
-      new Uint8Array(imageBuffer)
-        .reduce((data, byte) => data + String.fromCharCode(byte), '')
-    );
 
     return c.json({
       image: `data:image/png;base64,${base64Image}`,
