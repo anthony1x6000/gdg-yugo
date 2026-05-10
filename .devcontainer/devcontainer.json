@@ -10,10 +10,10 @@
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [3000],
+	"forwardPorts": [8787, 5173],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "find backend -maxdepth 2 -name package.json -execdir npm install \\;",
+	"postCreateCommand": "find . -maxdepth 2 -name package.json -execdir npm install \\;",
 
 	// Configure tool-specific properties.
 	"customizations": {
