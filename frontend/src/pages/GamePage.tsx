@@ -71,6 +71,7 @@ export default function GamePage() {
           srcDoc={data.html}
           className="w-full h-full border-none pointer-events-none"
           title="Website Preview"
+          sandbox="allow-scripts allow-same-origin"
         />
       </div>
 
