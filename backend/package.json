@@ -1,32 +1,23 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Cloudflare Worker based Edge Server and Scraper",
+  "description": "Simplified HTML proxy for Website Guessr",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "vitest run",
-    "generate": "drizzle-kit generate",
-    "migrate:local": "wrangler d1 migrations apply site-rules-db --local",
-    "migrate:remote": "wrangler d1 migrations apply site-rules-db --remote"
+    "test": "vitest run"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "engines": {
     "node": ">=22.22.2"
   },
   "dependencies": {
-    "better-auth": "latest",
     "cheerio": "^1.2.0",
-    "drizzle-orm": "^0.45.2",
     "hono": "^4.12.18"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240502.0",
-    "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5",

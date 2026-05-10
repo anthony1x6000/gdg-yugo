@@ -1,9 +1,34 @@
-import { app } from './api/base.js';
+import { Hono } from 'hono';
 
-import './api/auth.js';
-import './api/leaderboard.js';
-import './api/rules.js';
-import './api/scrape.js';
-import './api/highscore.js';
+const app = new Hono();
+
+app.get('/', async (c) => {
+  const targetUrl = c.req.query('site');
+  const cssToInject = c.req.query('css');
+  
+  if (!targetUrl) return c.json({ error: 'site argument is required' }, 400);
+  
+  try {
+    const response = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (!response.ok) throw new Error('Failed to fetch site');
+    
+    let finalHtml = await response.text();
+    
+    if (cssToInject) {
+      const styleTag = `
+<style>
+${cssToInject}
+</style>
+`;
+      if (finalHtml.includes('</head>')) finalHtml = finalHtml.replace('</head>', styleTag + '</head>');
+      else if (finalHtml.includes('</body>')) finalHtml = finalHtml.replace('</body>', styleTag + '</body>');
+      else finalHtml += styleTag;
+    }
+    
+    return c.html(finalHtml);
+  } catch (error: any) {
+    return c.json({ error: 'Failed to scrape', message: error.message }, 500);
+  }
+});
 
 export default app;
