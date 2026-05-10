@@ -1,16 +1,16 @@
-# Scraper Service API Documentation
+# Scraper Service API Documentation (Cloudflare Worker)
 
-The Scraper Service provides an endpoint to programmatically fetch a website's HTML for use in other applications.
+The Scraper Service is a Cloudflare Worker that fetches a website's HTML and optionally injects CSS rules stored in a D1 database or provided via query parameters.
 
 ## Base URL
 
-By default, the service runs at: `http://localhost:3000`
+When running locally: `http://localhost:8787`
 
 ## Endpoints
 
 ### Scrape Website
 
-Fetches the HTML from a provided URL and returns the raw content as found.
+Fetches the HTML from a provided URL and returns the raw content with optional CSS injection.
 
 **URL:** `/scrape`
 
@@ -20,50 +20,45 @@ Fetches the HTML from a provided URL and returns the raw content as found.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `url`     | string | Yes      | The full URL of the website to scrape (e.g., `https://example.com`). Must be a valid URI. |
-| `css`     | string | No       | Optional CSS payload to inject into the HTML. Used for hiding elements or custom styling. |
+| `url`     | string | Yes      | The full URL of the website to scrape. |
+| `css`     | string | No       | Optional CSS payload to inject. Overrides any database rules. |
 
 **Success Response:**
 
 *   **Code:** `200 OK`
 *   **Content-Type:** `text/html`
-*   **Body:** A string containing the raw HTML (optionally with injected CSS).
+*   **Body:** Raw HTML (optionally with injected CSS).
 
-**Example Request with CSS Injection:**
+## Database Rules
 
-```bash
-curl "http://localhost:3000/scrape?url=https://example.com&css=.ad-container{display:none!important;}"
-```
+The service automatically checks a Cloudflare D1 database for rules matching the target domain.
 
-**Error Responses:**
+- **Table:** `site_cleaner_rules`
+- **Columns:**
+  - `domain` (TEXT, PK): The hostname of the site.
+  - `css_injection` (TEXT): The CSS to inject.
+  - `is_active` (BOOLEAN): Whether the rule is currently active.
 
-*   **Code:** `400 Bad Request`
-    *   **Reason:** Missing `url` parameter or the provided string is not a valid URI.
-    *   **Body:** JSON object detailing the validation error.
-*   **Code:** `500 Internal Server Error`
-    *   **Reason:** The target website could not be reached.
-    *   **Body:**
-        ```json
-        {
-          "error": "Failed to scrape website",
-          "message": "Specific error details"
-        }
-        ```
-
-## Scraped Content
-
-The service returns the exact HTML content received from the target URL. If the `css` parameter is provided, it is injected as a `<style>` block into the `<head>`, `<body>`, or at the end of the document. No other filtering or modifications are performed.
+If an active rule is found for the domain, its CSS will be injected unless the `css` query parameter is provided (which takes precedence).
 
 ## Development
 
-To run the service locally:
-
+Install dependencies:
 ```bash
-npm run dev
+npm install
 ```
 
-To run tests:
-
+Generate migrations:
 ```bash
-npm test
+npm run generate
+```
+
+Apply migrations locally:
+```bash
+npm run migrate:local
+```
+
+Run locally:
+```bash
+npm run dev
 ```
