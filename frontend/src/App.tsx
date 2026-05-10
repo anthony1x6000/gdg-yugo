@@ -24,6 +24,11 @@ function App() {
             <Route path="/submit" element={<SubmitPage />} />
           </Routes>
         </main>
+        <footer className="border-t bg-background p-4 text-center text-sm">
+          <a href="https://github.com/anthony1x6000/gdg-yugo" target="_blank" rel="noopener noreferrer" className="hover:underline">
+            View on GitHub
+          </a>
+        </footer>
       </div>
     </BrowserRouter>
   );
