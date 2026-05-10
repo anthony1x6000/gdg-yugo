@@ -1,122 +1,93 @@
-# Cloudflare & Wrangler Setup Guide
+# Backend Setup & Deployment Guide
 
-This document provides a comprehensive guide on how to configure, develop, and deploy the `scraper` backend to Cloudflare Workers using the Wrangler CLI. It also covers the setup and migration of the Cloudflare D1 database.
+This document provides a comprehensive guide on how to configure, develop, and deploy the `scraper` backend to a single Virtual Private Server (VPS). This backend is powered by **Fastify** for high-performance routing and **Drizzle ORM** with **SQLite** for data management.
 
 ## Prerequisites
 
-Ensure you have Node.js and `npm` (or `pnpm`) installed. The project dependencies should already be installed via:
+Ensure you have Node.js and your preferred package manager (`pnpm` recommended) installed on both your local machine and your VPS.
 
 ```bash
 pnpm install
 ```
 
-Wrangler is the official Cloudflare developer CLI. It is installed as a development dependency. To run it, prefix commands with `npx` or use your package manager (e.g., `npx wrangler` or `pnpm exec wrangler`).
+## 1. Database Setup (SQLite)
 
-## 1. Authenticate with Cloudflare
+The project uses a local SQLite database and Drizzle ORM. Drizzle automatically manages your local SQLite database file based on your configuration.
 
-Before creating resources or deploying, you need to log in to your Cloudflare account.
+### Apply Migrations
 
-```bash
-npx wrangler login
-```
-
-This command will open a browser window and prompt you to authorize Wrangler to access your Cloudflare account.
-
-## 2. Set Up Cloudflare D1 (Database)
-
-The project uses Cloudflare D1 (a serverless SQLite database) and Drizzle ORM.
-
-### Create the Remote Database
-
-Run the following command to create a new D1 database named `site-rules-db` (as configured in `wrangler.toml`):
+To apply the database migrations and ensure your schema is up-to-date, run:
 
 ```bash
-npx wrangler d1 create site-rules-db
+pnpm run db:push
+# Or if using specific migration scripts:
+pnpm run db:migrate
 ```
 
-The output will look something like this:
+## 2. Local Development
 
-```text
-✅ Successfully created DB 'site-rules-db' in region EEUR
-Created your database using D1's new storage backend. The new storage backend is not yet recommended for production workloads, but backs up your data via point-in-time recovery.
-
-[[d1_databases]]
-binding = "DB"
-database_name = "site-rules-db"
-database_id = "xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxx"
-```
-
-### Update `wrangler.toml`
-
-Copy the `database_id` from the output above and update your `backend/wrangler.toml` file to replace `YOUR_DATABASE_ID_HERE`:
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "site-rules-db"
-database_id = "YOUR_NEW_DATABASE_ID"
-```
-
-## 3. Database Migrations (Drizzle ORM)
-
-The project uses Drizzle ORM to manage the database schema. Drizzle generates SQL migration files located in the `drizzle/` directory.
-
-### Apply Migrations Locally
-
-To apply the migrations to your local development database (for testing with `wrangler dev`):
+You can run the Fastify backend locally using your development script, which typically leverages `tsx` or `ts-node-dev` for live reloading.
 
 ```bash
-npx wrangler d1 migrations apply site-rules-db --local
+pnpm run dev
 ```
 
-### Apply Migrations Remotely (Production)
+This starts a local Fastify server. Any changes you make to the source code will trigger a reload automatically. By default, Fastify will listen on a port like `3000` or `8080`, depending on your `src/index.ts` configuration.
 
-Once you are ready to deploy to production, apply the migrations to the live Cloudflare D1 database:
+## 3. VPS Deployment
+
+Deploying your Fastify backend to a single VPS involves pulling your code, installing dependencies, building the TypeScript files, and running the application with a process manager like PM2.
+
+### Server Setup
+
+1. SSH into your VPS.
+2. Ensure Node.js and `pnpm` are installed.
+3. Clone the repository to your VPS.
 
 ```bash
-npx wrangler d1 migrations apply site-rules-db --remote
+git clone <your-repo-url>
+cd <your-repo-directory>/backend
 ```
 
-## 4. Local Development
+### Install Dependencies and Migrate
 
-You can run the worker locally. Wrangler will simulate the Cloudflare Worker environment and automatically use a local version of the D1 database.
+Once inside the project directory on your server:
 
 ```bash
-npx wrangler dev
+pnpm install --prod=false # Ensure devDependencies for building
+pnpm run db:migrate
 ```
 
-This starts a local server (usually on `http://localhost:8787`). Any changes you make to `src/index.ts` or other files will be live-reloaded.
+### Running with PM2
 
-*(Note: If you need your local environment to connect to the actual remote D1 database instead of the local simulation, run `npx wrangler dev --remote`.)*
-
-## 5. Type Generation
-
-Whenever you update bindings in `wrangler.toml` (e.g., adding KV namespaces, R2 buckets, or changing D1 configurations), you should regenerate the TypeScript definitions so your editor provides accurate auto-completion.
+We recommend using PM2 to keep your Fastify application running in the background. PM2 handles log management and restarts the app automatically if it crashes or the server reboots.
 
 ```bash
-npx wrangler types
+# Install PM2 globally
+npm install -g pm2
+
+# Build the TypeScript project into JavaScript
+pnpm run build
+
+# Start the Fastify application
+pm2 start dist/index.js --name "fastify-scraper-backend"
+
+# Save the PM2 process list so it starts on boot
+pm2 save
+pm2 startup
 ```
 
-This generates or updates the `worker-configuration.d.ts` file.
+## 4. Reverse Proxy Configuration (Optional but Recommended)
 
-## 6. Deployment
-
-Deploying your Worker to Cloudflare's edge network is straightforward. Make sure you have applied your remote D1 migrations first.
-
-```bash
-npx wrangler deploy
-```
-
-Wrangler will bundle your code, upload it to Cloudflare, and provide you with a live URL (e.g., `https://scraper.<your-subdomain>.workers.dev`).
+For a production environment on a VPS, it is highly recommended to put Fastify behind a reverse proxy like Nginx or Caddy. This allows you to handle SSL/TLS termination and route traffic from port 80/443 to your Fastify app's internal port.
 
 ## Summary of Useful Commands
 
 | Task | Command |
 |------|---------|
-| **Start Local Server** | `npx wrangler dev` |
-| **Create DB** | `npx wrangler d1 create site-rules-db` |
-| **Local Migrations** | `npx wrangler d1 migrations apply site-rules-db --local` |
-| **Remote Migrations** | `npx wrangler d1 migrations apply site-rules-db --remote` |
-| **Generate Types** | `npx wrangler types` |
-| **Deploy to Production** | `npx wrangler deploy` |
-| **View Live Logs** | `npx wrangler tail` |
+| **Start Local Server** | `pnpm run dev` |
+| **Apply Migrations** | `pnpm run db:migrate` |
+| **Build Project** | `pnpm run build` |
+| **Start on VPS** | `pm2 start dist/index.js` |
+| **View Logs (VPS)** | `pm2 logs` |
+| **Restart App (VPS)**| `pm2 restart fastify-scraper-backend` |
