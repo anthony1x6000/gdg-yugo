@@ -60,6 +60,24 @@ it('should return raw HTML correctly', async () => {
 });
 
 
+  it('should inject CSS if provided', async () => {
+    const mockHtml = '<html><head></head><body>Content</body></html>';
+    const css = '.ads { display: none; }';
+    
+    vi.mocked(axios.get).mockResolvedValue({ data: mockHtml });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/scrape?url=https://example.com&css=${encodeURIComponent(css)}`
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toContain('<style>');
+    expect(response.body).toContain(css);
+    expect(response.body).toContain('</style>');
+    expect(response.body).toContain('</head>');
+  });
+
   it('should return 500 if axios fails', async () => {
     vi.mocked(axios.get).mockRejectedValue(new Error('Network error'));
 

@@ -12,10 +12,12 @@ export const app = fastify;
 
 /**
  * Endpoint to scrape a website and return raw HTML content.
+ * Supports optional CSS injection for hiding/styling elements.
  * 
  * @route GET /scrape
  * @param {string} url - The URL of the website to scrape (must be a valid URI).
- * @returns {string} - The raw HTML content.
+ * @param {string} [css] - Optional CSS payload to inject into the HTML.
+ * @returns {string} - The HTML content with injected CSS (if provided).
  * @throws {400} - If the URL is missing or invalid.
  * @throws {500} - If scraping fails.
  */
@@ -25,12 +27,13 @@ fastify.get('/scrape', {
       type: 'object',
       required: ['url'],
       properties: {
-        url: { type: 'string', format: 'uri' }
+        url: { type: 'string', format: 'uri' },
+        css: { type: 'string' }
       }
     }
   }
 }, async (request, reply) => {
-  const { url } = request.query as { url: string };
+  const { url, css } = request.query as { url: string; css?: string };
 
   try {
     // Fetch the website (This is your 'wget' replacement)
@@ -41,8 +44,23 @@ fastify.get('/scrape', {
       }
     });
 
-    // Return as HTML content without filtering
-    reply.type('text/html').send(rawHtml);
+    let finalHtml = rawHtml;
+
+    // Inject CSS if provided
+    if (css) {
+      const styleTag = `\n<style>\n${css}\n</style>\n`;
+      // Try to inject before </head>, otherwise before </body>, otherwise append
+      if (finalHtml.includes('</head>')) {
+        finalHtml = finalHtml.replace('</head>', `${styleTag}</head>`);
+      } else if (finalHtml.includes('</body>')) {
+        finalHtml = finalHtml.replace('</body>', `${styleTag}</body>`);
+      } else {
+        finalHtml += styleTag;
+      }
+    }
+
+    // Return as HTML content
+    reply.type('text/html').send(finalHtml);
 
   } catch (error: any) {
     fastify.log.error(error);
