@@ -13,6 +13,12 @@
       "skillPath": "skills/fastify-best-practise/SKILL.md",
       "computedHash": "9dc74b28673fa64fe7bf5decf20bca28d0ede2eaa447788bfccffc0a8f0274df"
     },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "80a6226e78f6d1fe464214ae0ef449d49d8ffaa3e7704f011e9b418c678ad4d1"
+    },
     "workers-best-practices": {
       "source": "cloudflare/skills",
       "sourceType": "github",
