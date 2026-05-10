@@ -10,3 +10,7 @@ database_id = "97bc1463-fffd-47ce-b6cd-1a392779fa13"
 
 [vars]
 FILTER_URL = "https://backend.quieting.workers.dev/"
+
+[[r2_buckets]]
+binding = "SCREENSHOTS"
+bucket_name = "gsr-screenshots"

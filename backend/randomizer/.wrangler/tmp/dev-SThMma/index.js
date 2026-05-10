@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-fla4Cm/checked-fetch.js
+// .wrangler/tmp/bundle-DgOwXB/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2211,28 +2211,69 @@ var cors = /* @__PURE__ */ __name((options) => {
 // src/index.ts
 var app = new Hono2();
 app.use("*", cors());
-app.post("/push", async (c) => {
+app.get("/random", async (c) => {
   try {
-    const { website_address, css_payload, js_selector } = await c.req.json();
-    if (!website_address) {
-      return c.json({ error: "website_address is required" }, 400);
+    const { results } = await c.env.DB.prepare(
+      "SELECT id, website_address, css_payload, js_selector, updated_at FROM sites ORDER BY RANDOM() LIMIT 1"
+    ).all();
+    if (!results || results.length === 0) {
+      return c.json({ error: "No sites found in database" }, 404);
     }
-    let normalizedAddress = website_address.replace(/:\/\/(www\.)?/, "://");
-    try {
-      new URL(normalizedAddress);
-    } catch (e) {
-      return c.json({ error: "Invalid website_address format" }, 400);
+    const correctSite = results[0];
+    const cacheKey = `site-${correctSite.id}-${correctSite.updated_at.replace(/[: -]/g, "")}.png`;
+    let imageBuffer;
+    if (c.env.SCREENSHOTS) {
+      const cached = await c.env.SCREENSHOTS.get(cacheKey);
+      if (cached) {
+        console.log(`Cache hit for ${correctSite.website_address}`);
+        imageBuffer = await cached.arrayBuffer();
+      }
     }
-    const { success } = await c.env.DB.prepare(
-      `INSERT INTO sites (website_address, css_payload, js_selector) 
-       VALUES (?, ?, ?)
-       ON CONFLICT(website_address) DO UPDATE SET
-       css_payload = excluded.css_payload,
-       js_selector = excluded.js_selector`
-    ).bind(normalizedAddress, css_payload || "", js_selector || "").run();
-    return c.json({ message: "Site pushed/updated successfully" }, success ? 200 : 500);
+    if (!imageBuffer) {
+      console.log(`Cache miss for ${correctSite.website_address}, calling filter...`);
+      const filterUrl = new URL(c.env.FILTER_URL);
+      filterUrl.searchParams.set("site", correctSite.website_address);
+      if (correctSite.css_payload) {
+        filterUrl.searchParams.set("css", correctSite.css_payload);
+      }
+      if (correctSite.js_selector) {
+        filterUrl.searchParams.set("selector", correctSite.js_selector);
+      }
+      const filterResponse = await fetch(filterUrl.toString());
+      if (!filterResponse.ok) {
+        const errorText = await filterResponse.text();
+        throw new Error(`Filter worker failed with status ${filterResponse.status}: ${errorText}`);
+      }
+      imageBuffer = await filterResponse.arrayBuffer();
+      if (c.env.SCREENSHOTS) {
+        c.executionCtx.waitUntil(
+          c.env.SCREENSHOTS.put(cacheKey, imageBuffer)
+        );
+      }
+    }
+    const base64Image = btoa(
+      new Uint8Array(imageBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+    );
+    const { results: optionsResults } = await c.env.DB.prepare(
+      "SELECT website_address FROM sites WHERE id != ? ORDER BY RANDOM() LIMIT 3"
+    ).bind(correctSite.id).all();
+    const options = [correctSite.website_address, ...optionsResults.map((r) => r.website_address)];
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    return c.json({
+      image: `data:image/png;base64,${base64Image}`,
+      correct_domain: correctSite.website_address,
+      options
+    });
   } catch (error) {
-    return c.json({ error: "Internal Server Error", message: error.message }, 500);
+    console.error("Randomizer Error:", error);
+    return c.json({
+      error: "Internal Server Error",
+      message: error.message,
+      stack: error.stack
+    }, 500);
   }
 });
 var src_default = app;
@@ -2278,7 +2319,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-fla4Cm/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-DgOwXB/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -2310,7 +2351,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-fla4Cm/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-DgOwXB/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

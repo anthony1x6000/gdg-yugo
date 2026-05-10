@@ -44,15 +44,21 @@ app.get('/', async (c) => {
       // Handle document.querySelector("...") format if passed literally
       if (selector.includes('document.querySelector')) {
         const parts = selector.split(/['"]/);
-        if (parts.length >= 2) {
+        if (parts.length >= 2 && parts[1]) {
           cleanSelector = parts[1];
         }
       }
 
       try {
         console.log(`Waiting for and clicking selector: ${cleanSelector}`);
-        await page.waitForSelector(cleanSelector, { timeout: 5000 });
-        await page.click(cleanSelector);
+        await page.waitForSelector(cleanSelector, { timeout: 15000 });
+        
+        // Use evaluate to perform a raw DOM click, bypassing Puppeteer's visibility/overlay checks
+        await page.evaluate((sel) => {
+          const element = document.querySelector(sel) as HTMLElement;
+          if (element) element.click();
+        }, cleanSelector);
+        
         // Wait for potential content change or animation
         await new Promise(r => setTimeout(r, 2000));
       } catch (e: any) {
