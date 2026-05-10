@@ -49,6 +49,9 @@ it('should return raw HTML correctly', async () => {
 
   expect(response.statusCode).toBe(200);
   expect(response.headers['content-type']).toContain('text/html');
+  expect(axios.get).toHaveBeenCalledWith('https://example.com', expect.objectContaining({
+    maxRedirects: 0
+  }));
 
   const body = response.body;
   expect(body).toBe(mockHtml);
@@ -58,7 +61,6 @@ it('should return raw HTML correctly', async () => {
   expect(body).toContain('<script>');
   expect(body).toContain('<style>');
 });
-
 
   it('should return 500 if axios fails', async () => {
     vi.mocked(axios.get).mockRejectedValue(new Error('Network error'));
