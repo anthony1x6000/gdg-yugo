@@ -1,6 +1,6 @@
 # Scraper Service API Documentation
 
-The Scraper Service provides an endpoint to programmatically fetch a website's HTML and filter it for safe embedding into a frontend application.
+The Scraper Service provides an endpoint to programmatically fetch a website's HTML for use in other applications.
 
 ## Base URL
 
@@ -21,17 +21,18 @@ Fetches the HTML from a provided URL and returns the raw content as found.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `url`     | string | Yes      | The full URL of the website to scrape (e.g., `https://example.com`). Must be a valid URI. |
+| `css`     | string | No       | Optional CSS payload to inject into the HTML. Used for hiding elements or custom styling. |
 
 **Success Response:**
 
 *   **Code:** `200 OK`
 *   **Content-Type:** `text/html`
-*   **Body:** A string containing the raw HTML of the scraped page.
+*   **Body:** A string containing the raw HTML (optionally with injected CSS).
 
-**Example Request:**
+**Example Request with CSS Injection:**
 
 ```bash
-curl "http://localhost:3000/scrape?url=https://example.com"
+curl "http://localhost:3000/scrape?url=https://example.com&css=.ad-container{display:none!important;}"
 ```
 
 **Error Responses:**
@@ -51,7 +52,7 @@ curl "http://localhost:3000/scrape?url=https://example.com"
 
 ## Scraped Content
 
-The service returns the exact HTML content received from the target URL without any filtering or modifications.
+The service returns the exact HTML content received from the target URL. If the `css` parameter is provided, it is injected as a `<style>` block into the `<head>`, `<body>`, or at the end of the document. No other filtering or modifications are performed.
 
 ## Development
 
