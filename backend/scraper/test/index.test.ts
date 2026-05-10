@@ -62,6 +62,7 @@ it('should return raw HTML correctly', async () => {
   expect(body).toContain('<style>');
 });
 
+
   it('should return 500 if axios fails', async () => {
     vi.mocked(axios.get).mockRejectedValue(new Error('Network error'));
 
