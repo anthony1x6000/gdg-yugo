@@ -1,0 +1,8 @@
+name = "scraper"
+main = "src/index.ts"
+compatibility_date = "2024-05-10"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "site-rules-db"
+database_id = "YOUR_DATABASE_ID_HERE"
