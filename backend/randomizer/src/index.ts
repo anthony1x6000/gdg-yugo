@@ -50,7 +50,7 @@ app.get('/random', async (c) => {
 
     // 3. Call filter worker if no cache hit
     if (!imageBuffer) {
-      const targetFilterUrl = c.env.FILTER_URL || 'http://34.121.33.153:8789/';
+      const targetFilterUrl = c.env.FILTER_URL || 'http://filter.anthonyis.online/';
       console.log(`Cache miss for ${correctSite.website_address}, calling filter at ${targetFilterUrl}...`);
       const filterUrl = new URL(targetFilterUrl);
       filterUrl.searchParams.set('site', correctSite.website_address as string);
