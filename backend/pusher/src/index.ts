@@ -69,6 +69,15 @@ app.post('/push', async (c) => {
     const cleanCss = css_payload ? sanitizeHtml(css_payload, { allowedTags: [], allowedAttributes: {} }) : '';
     const cleanSelector = js_selector ? sanitizeHtml(js_selector, { allowedTags: [], allowedAttributes: {} }) : '';
 
+    // Block @import and url() in CSS and selectors to prevent XSS and unauthorized resource loading
+    const securityPattern = /@import|url\s*\(/i;
+    if (securityPattern.test(cleanCss) || securityPattern.test(cleanSelector)) {
+      return c.json({ 
+        error: 'Security violation', 
+        message: 'CSS and selectors cannot contain @import or url().' 
+      }, 400);
+    }
+
     const { success } = await c.env.DB.prepare(
       `INSERT INTO sites (website_address, css_payload, js_selector) 
        VALUES (?, ?, ?)
