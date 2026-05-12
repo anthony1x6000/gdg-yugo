@@ -5,7 +5,10 @@ This worker allows users to submit new websites and CSS anonymization payloads t
 ## API Endpoints
 
 ### `POST /push`
-Adds a new site to the database.
+Adds a new site to the database. Only permitted domains are accepted.
+
+**Permitted Domains:**
+YouTube, Bing, Google, LinkedIn, Brave, OpenBSD, Instagram, p9f.org, Docker, McDonald's, Burger King, Tim Hortons, Filen, Anthonyis.online, Discord, and GitHub.
 
 **Request Body:**
 ```json
