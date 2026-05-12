@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-kVzyMn/checked-fetch.js
+// .wrangler/tmp/bundle-x5Sjni/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2226,7 +2226,12 @@ app.get("/random", async (c) => {
       return c.json({ error: "No sites found in database" }, 404);
     }
     const correctSite = results[0];
-    const cacheKey = `site-${correctSite.id}-${(correctSite.updated_at || "").replace(/[: -]/g, "")}.png`;
+    if (!correctSite.website_address) {
+      return c.json({ error: "Site has no URL" }, 500);
+    }
+    const rawUpdatedAt = correctSite.updated_at;
+    const safeUpdatedAt = rawUpdatedAt != null ? String(rawUpdatedAt).replace(/[: -]/g, "") : "";
+    const cacheKey = `site-${correctSite.id}-${safeUpdatedAt}.png`;
     let imageBuffer;
     if (c.env.SCREENSHOTS) {
       const cached = await c.env.SCREENSHOTS.get(cacheKey);
@@ -2326,7 +2331,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-kVzyMn/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-x5Sjni/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -2358,7 +2363,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-kVzyMn/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-x5Sjni/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

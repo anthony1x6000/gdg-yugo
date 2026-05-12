@@ -30,8 +30,14 @@ app.get('/random', async (c) => {
 
     const correctSite = results[0];
 
+    if (!correctSite.website_address) {
+      return c.json({ error: 'Site has no URL' }, 500);
+    }
+
     // 2. Check R2 Cache
-    const cacheKey = `site-${correctSite.id}-${(correctSite.updated_at as string || '').replace(/[: -]/g, '')}.png`;
+    const rawUpdatedAt = correctSite.updated_at;
+    const safeUpdatedAt = rawUpdatedAt != null ? String(rawUpdatedAt).replace(/[: -]/g, '') : '';
+    const cacheKey = `site-${correctSite.id}-${safeUpdatedAt}.png`;
     let imageBuffer: ArrayBuffer | undefined;
 
     if (c.env.SCREENSHOTS) {
