@@ -22,7 +22,7 @@ echo "Initializing shared local database..."
 
 # 1. Start Filter Service (Port 8789) - Running in Docker to handle Puppeteer dependencies
 echo "Starting Filter Service in Docker on http://127.0.0.1:8789"
-(cd backend/filter && docker build -t filter-service . && docker rm -f filter-container 2>/dev/null || true && docker run -d -p 8789:8789 --name filter-container filter-service)
+(cd backend/filter && docker build -t filter-service . && docker rm -f filter-container 2>/dev/null || true && docker run -d -p 8789:8080 --name filter-container filter-service)
 # Give it a moment to start
 sleep 5
 

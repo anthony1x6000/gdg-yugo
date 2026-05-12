@@ -17,37 +17,31 @@ app.get('/', async (c) => {
   const targetUrl = c.req.query('site');
   const cssToInject = c.req.query('css');
   const selector = c.req.query('selector');
-  
+
   if (!targetUrl) return c.json({ error: 'site argument is required' }, 400);
-  
+
   let browser;
   try {
     console.log(`Launching browser for: ${targetUrl}`);
-    // Standard puppeteer launch for VPS (no-sandbox often required in Docker/VPS)
     browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
-    
+
     const page = await browser.newPage();
-    
-    // Set a common viewport
     await page.setViewport({ width: 1280, height: 800 });
 
-    await page.goto(targetUrl, { 
+    await page.goto(targetUrl, {
       waitUntil: 'networkidle2',
-      timeout: 30000 
+      timeout: 30000
     });
 
-    // 1. Inject CSS to hide identifying features
     if (cssToInject) {
       await page.addStyleTag({ content: cssToInject });
     }
 
-    // 2. Click JS Selector if provided (e.g., "Enter" button)
     if (selector) {
       let cleanSelector = selector;
-      // Handle document.querySelector("...") format if passed literally
       if (selector.includes('document.querySelector')) {
         const parts = selector.split(/['"]/);
         if (parts.length >= 2 && parts[1]) {
@@ -58,23 +52,18 @@ app.get('/', async (c) => {
       try {
         console.log(`Waiting for and clicking selector: ${cleanSelector}`);
         await page.waitForSelector(cleanSelector, { timeout: 15000 });
-        
-        // Use evaluate to perform a raw DOM click, bypassing Puppeteer's visibility/overlay checks
         await page.evaluate((sel) => {
           const element = document.querySelector(sel) as HTMLElement;
           if (element) element.click();
         }, cleanSelector);
-        
-        // Wait for potential content change or animation
         await new Promise(r => setTimeout(r, 2000));
       } catch (e: any) {
         console.warn(`Selector "${cleanSelector}" interaction failed or timed out:`, e.message);
       }
     }
 
-    // 3. Take Screenshot
     const screenshot = await page.screenshot({ type: 'png' });
-    
+
     return new Response(screenshot as any, {
       headers: {
         'Content-Type': 'image/png',
@@ -83,11 +72,11 @@ app.get('/', async (c) => {
       }
     });
   } catch (error: any) {
-    console.error(`Filter Error for ${targetUrl}:`, error);
-    return c.json({ 
-      error: 'Failed to capture site', 
+    console.error(`Error for ${targetUrl}:`, error);
+    return c.json({
+      error: 'Failed to capture site',
       message: error.message,
-      target: targetUrl 
+      target: targetUrl
     }, 500);
   } finally {
     if (browser) {
@@ -96,8 +85,9 @@ app.get('/', async (c) => {
   }
 });
 
-const port = 8789;
-console.log(`Filter server is running on port ${port}`);
+// Cloud Run injects PORT; fall back to 8080
+const port = parseInt(process.env.PORT ?? '8080', 10);
+console.log(`Server running on port ${port}`);
 
 serve({
   fetch: app.fetch,

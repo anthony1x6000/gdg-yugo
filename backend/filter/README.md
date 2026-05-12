@@ -1,26 +1,35 @@
-# Website Guessr - Filter Worker
+# Website Guessr - Filter Service
 
-This worker acts as an HTML proxy that fetches a website and injects custom CSS to anonymize it.
+Puppeteer-based screenshot service that fetches a website and injects custom CSS to anonymize it.
 
 ## Development
 
-Run the development server:
+### Running with Docker (Recommended)
+This handles all Puppeteer/Chromium dependencies automatically.
 ```bash
-pnpm run dev --port 8787
+# From the project root
+./start-dev.sh
 ```
+The filter service will be available at `http://localhost:8789`.
+
+### Running Locally (Node.js)
+Ensure you have Chromium installed.
+```bash
+pnpm run dev
+```
+By default, it will listen on port `8080`. Use `PORT=8789 pnpm run dev` to use the legacy port.
 
 ## Deployment
 
-Deploy to Cloudflare Workers:
+This service is designed to run on **Google Cloud Run** or any Docker-compatible hosting.
+
+### Cloud Run
+Cloud Run injects a `PORT` environment variable (usually `8080`). The server is configured to listen on this port.
+
 ```bash
-pnpm run deploy
+gcloud run deploy filter-service --source . --env-vars PORT=8080
 ```
 
 ## API Endpoints
 
-### `GET /`
-Fetches HTML from a provided URL and returns it with optional CSS injection.
-
-* **Query Parameters:**
-  * `site` (string, **required**): The full URL of the website to scrape.
-  * `css` (string, optional): CSS payload to inject.
+See [API.md](./API.md) for full documentation.
