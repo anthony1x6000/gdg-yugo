@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import sanitizeHtml from 'sanitize-html';
 
 export interface Env {
   DB: D1Database;
@@ -42,6 +43,10 @@ app.post('/push', async (c) => {
       return c.json({ error: 'Invalid website_address format' }, 400);
     }
 
+    // Sanitize payloads to remove any HTML tags (like <script>)
+    const cleanCss = css_payload ? sanitizeHtml(css_payload, { allowedTags: [], allowedAttributes: {} }) : '';
+    const cleanSelector = js_selector ? sanitizeHtml(js_selector, { allowedTags: [], allowedAttributes: {} }) : '';
+
     const { success } = await c.env.DB.prepare(
       `INSERT INTO sites (website_address, css_payload, js_selector) 
        VALUES (?, ?, ?)
@@ -49,7 +54,7 @@ app.post('/push', async (c) => {
        css_payload = excluded.css_payload,
        js_selector = excluded.js_selector,
        updated_at = CURRENT_TIMESTAMP`
-    ).bind(normalizedAddress, css_payload || '', js_selector || '').run();
+    ).bind(normalizedAddress, cleanCss, cleanSelector).run();
 
     return c.json({ message: 'Site pushed/updated successfully' }, success ? 200 : 500);
   } catch (error: any) {
