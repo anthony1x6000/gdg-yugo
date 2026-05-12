@@ -9,7 +9,7 @@ export interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
-const ALLOWED_DOMAINS_CSV = 'youtube.com,bing.com,google.com,linkedin.com,brave.com,openbsd.org,instagram.com,p9f.org,docker.com,mcdonalds.com,burgerking.ca,timhortons.ca,filen.io,anthonyis.online,discord.com,github.com,ontario.ca';
+const ALLOWED_DOMAINS_CSV = 'youtube.com,bing.com,google.com,linkedin.com,brave.com,openbsd.org,instagram.com,p9f.org,docker.com,mcdonalds.com,burgerking.ca,timhortons.ca,filen.io,anthonyis.online,discord.com,github.com,ontario.ca,duckduckgo.com,search.brave.com,pinterest.com,uoguelph.ca,twitter.com,kde.org,lenovo.com';
 const ALLOWED_DOMAINS = ALLOWED_DOMAINS_CSV.split(',').map(d => d.trim().toLowerCase());
 
 app.use('*', cors());
