@@ -26,10 +26,8 @@ export default function SubmitPage() {
   const [selector, setSelector] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const submissionsDisabled = false;
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (submissionsDisabled) return;
     const val = e.target.value;
     if (val) {
       setCss((prev) => (prev ? `${prev}\n${val}` : val));
@@ -42,13 +40,14 @@ export default function SubmitPage() {
       setAddress('');
       setCss('');
       setSelector('');
+      setTurnstileToken(null);
       queryClient.invalidateQueries({ queryKey: ['random-site'] });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (submissionsDisabled || !address) return;
+    if (!address || !turnstileToken) return;
     
     let formattedAddress = address.trim();
     if (!formattedAddress.startsWith('http://') && !formattedAddress.startsWith('https://')) {
@@ -61,7 +60,8 @@ export default function SubmitPage() {
     mutation.mutate({ 
       website_address: formattedAddress, 
       css_payload: css,
-      js_selector: selector 
+      js_selector: selector,
+      turnstile_token: turnstileToken
     });
   };
 
@@ -75,7 +75,7 @@ export default function SubmitPage() {
         </div>
       </div>
 
-      <Card className={submissionsDisabled ? 'opacity-50 grayscale' : ''}>
+      <Card>
         <CardHeader>
           <CardTitle>Submit a Website</CardTitle>
           <CardDescription>
@@ -92,7 +92,7 @@ export default function SubmitPage() {
                 value={address}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
                 required
-                disabled={mutation.isPending || submissionsDisabled}
+                disabled={mutation.isPending}
               />
             </div>
             <div className="space-y-2">
@@ -101,7 +101,7 @@ export default function SubmitPage() {
                 id="presets"
                 className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 onChange={handlePresetChange}
-                disabled={mutation.isPending || submissionsDisabled}
+                disabled={mutation.isPending}
                 defaultValue=""
               >
                 {CSS_PRESETS.map((preset) => (
@@ -119,7 +119,7 @@ export default function SubmitPage() {
                 className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 value={css}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCss(e.target.value)}
-                disabled={mutation.isPending || submissionsDisabled}
+                disabled={mutation.isPending}
               />
             </div>
             <div className="space-y-2">
@@ -129,7 +129,7 @@ export default function SubmitPage() {
                 placeholder="button.orange"
                 value={selector}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelector(e.target.value)}
-                disabled={mutation.isPending || submissionsDisabled}
+                disabled={mutation.isPending}
               />
               <p className="text-xs text-muted-foreground">
                 Puppeteer will wait for this selector and click it before taking the screenshot.
@@ -160,7 +160,7 @@ export default function SubmitPage() {
             )}
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={mutation.isPending || submissionsDisabled}>
+            <Button type="submit" className="w-full" disabled={mutation.isPending || !turnstileToken}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mutation.isPending ? 'Submitting...' : 'Submit Site'}
             </Button>
