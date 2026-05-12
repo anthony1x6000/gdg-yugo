@@ -7,7 +7,3 @@ compatibility_flags = [ "nodejs_compat" ]
 binding = "DB"
 database_name = "gsrsites"
 database_id = "97bc1463-fffd-47ce-b6cd-1a392779fa13"
-
-[vars]
-SECRET_KEY_TURNSTILE = ""
-

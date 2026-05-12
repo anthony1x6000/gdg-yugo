@@ -71,7 +71,17 @@ export default function SubmitPage() {
         <AlertCircle className="h-10 w-10 flex-shrink-0" />
         <div>
           <h2 className="text-xl font-bold">Submission Restrictions</h2>
-          <p className="opacity-90">Domains are on a whitelist for the public release.</p>
+          <p className="opacity-90">
+            Domains are on a whitelist for the public release.{' '}
+            <a
+              href="https://github.com/anthony1x6000/gdg-yugo/blob/e46c0f109881df2cac968c3c64390cf33b678cc3/backend/pusher/src/index.ts#L12"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white/80"
+            >
+              See whitelist domains
+            </a>
+          </p>
         </div>
       </div>
 
