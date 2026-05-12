@@ -13,7 +13,12 @@ export const fetchRandomGame = async (): Promise<GameData> => {
   return res.json();
 };
 
-export const pushSite = async (data: { website_address: string; css_payload?: string; js_selector?: string }) => {
+export const pushSite = async (data: { 
+  website_address: string; 
+  css_payload?: string; 
+  js_selector?: string;
+  turnstile_token: string;
+}) => {
   const res = await fetch(`${PUSHER_URL}/push`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
