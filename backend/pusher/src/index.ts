@@ -7,6 +7,9 @@ export interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
+const ALLOWED_DOMAINS_CSV = 'youtube.com,bing.com,google.com,linkedin.com,brave.com,openbsd.org,instagram.com,p9f.org,docker.com,mcdonalds.com,burgerking.ca,timhortons.ca,filen.io,anthonyis.online,discord.com,github.com';
+const ALLOWED_DOMAINS = ALLOWED_DOMAINS_CSV.split(',').map(d => d.trim().toLowerCase());
+
 app.use('*', cors());
 
 app.post('/push', async (c) => {
@@ -20,9 +23,21 @@ app.post('/push', async (c) => {
     // Remove www. from the domain
     let normalizedAddress = website_address.replace(/:\/\/(www\.)?/, '://');
 
-    // Validate URL format
+    // Validate URL format and check against whitelist
     try {
-      new URL(normalizedAddress);
+      const url = new URL(normalizedAddress);
+      const hostname = url.hostname.toLowerCase();
+
+      const isAllowed = ALLOWED_DOMAINS.some(domain => 
+        hostname === domain || hostname.endsWith('.' + domain)
+      );
+
+      if (!isAllowed) {
+        return c.json({ 
+          error: 'Domain not permitted', 
+          message: `The domain ${hostname} is not in the whitelist.` 
+        }, 403);
+      }
     } catch (e) {
       return c.json({ error: 'Invalid website_address format' }, 400);
     }
