@@ -4,6 +4,7 @@ import sanitizeHtml from 'sanitize-html';
 
 export interface Env {
   DB: D1Database;
+  SECRET_KEY_TURNSTILE: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -15,7 +16,28 @@ app.use('*', cors());
 
 app.post('/push', async (c) => {
   try {
-    const { website_address, css_payload, js_selector } = await c.req.json();
+    const { website_address, css_payload, js_selector, turnstile_token } = await c.req.json();
+
+    if (!turnstile_token) {
+      return c.json({ error: 'Verification required', message: 'Turnstile token is missing.' }, 400);
+    }
+
+    // Verify Turnstile Token
+    const verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+    const result = await fetch(verifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        secret: c.env.SECRET_KEY_TURNSTILE,
+        response: turnstile_token,
+        remoteip: c.req.header('cf-connecting-ip') || '',
+      }),
+    });
+
+    const outcome: any = await result.json();
+    if (!outcome.success) {
+      return c.json({ error: 'Verification failed', message: 'Turnstile verification failed.' }, 403);
+    }
 
     if (!website_address) {
       return c.json({ error: 'website_address is required' }, 400);

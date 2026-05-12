@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const CSS_PRESETS = [
   { label: 'Custom', value: '' },
@@ -23,8 +24,9 @@ export default function SubmitPage() {
   const [address, setAddress] = useState('');
   const [css, setCss] = useState('');
   const [selector, setSelector] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const submissionsDisabled = true;
+  const submissionsDisabled = false;
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (submissionsDisabled) return;
@@ -65,15 +67,13 @@ export default function SubmitPage() {
 
   return (
     <div className="container max-w-2xl py-12">
-      {submissionsDisabled && (
-        <div className="bg-red-500 text-white p-6 rounded-xl mb-8 flex items-center gap-4 shadow-lg border-2 border-red-600 animate-pulse">
-          <AlertCircle className="h-10 w-10 flex-shrink-0" />
-          <div>
-            <h2 className="text-xl font-bold">Submissions Disabled</h2>
-            <p className="opacity-90">Site submissions are temporarily disabled. Please check back later.</p>
-          </div>
+      <div className="bg-amber-500 text-white p-6 rounded-xl mb-8 flex items-center gap-4 shadow-lg border-2 border-amber-600">
+        <AlertCircle className="h-10 w-10 flex-shrink-0" />
+        <div>
+          <h2 className="text-xl font-bold">Submission Restrictions</h2>
+          <p className="opacity-90">Domains are on a whitelist for the public release.</p>
         </div>
-      )}
+      </div>
 
       <Card className={submissionsDisabled ? 'opacity-50 grayscale' : ''}>
         <CardHeader>
@@ -134,6 +134,15 @@ export default function SubmitPage() {
               <p className="text-xs text-muted-foreground">
                 Puppeteer will wait for this selector and click it before taking the screenshot.
               </p>
+            </div>
+
+            <div className="flex justify-center py-4">
+              <Turnstile 
+                siteKey="0x4AAAAAADNlAcEFsS05-sWk" 
+                onSuccess={(token) => setTurnstileToken(token)}
+                onExpire={() => setTurnstileToken(null)}
+                onError={() => setTurnstileToken(null)}
+              />
             </div>
 
             {mutation.isSuccess && (
