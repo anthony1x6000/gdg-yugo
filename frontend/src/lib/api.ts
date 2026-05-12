@@ -5,6 +5,7 @@ export interface GameData {
   image: string;
   correct_domain: string;
   options: string[];
+  cache_miss: boolean;
 }
 
 export const fetchRandomGame = async (): Promise<GameData> => {

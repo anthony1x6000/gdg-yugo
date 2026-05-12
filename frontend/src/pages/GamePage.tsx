@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, Info } from 'lucide-react';
 
 export default function GamePage() {
   const { score, total, incrementScore, incrementTotal } = useScoreStore();
@@ -133,6 +133,24 @@ export default function GamePage() {
                 {isCorrect ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
                 <span className="font-semibold">
                   {isCorrect ? 'Correct!' : `Wrong! It was ${data.correct_domain}`}
+                </span>
+              </div>
+              <Button
+                className="w-full"
+                variant="outline"
+                size="lg"
+                onClick={handleNext}
+              >
+                Next Site
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+: `Wrong! It was ${data.correct_domain}`}
                 </span>
               </div>
               <Button
