@@ -4,7 +4,8 @@ The filter backend is a Node.js server using Hono and Puppeteer. It visits a pro
 
 ## Base URL
 
-Local: `http://localhost:8789`
+Local (via Docker): `http://localhost:8789`
+Internal/Cloud Run: `http://localhost:8080` (or dynamic `$PORT`)
 
 ## Endpoints
 
