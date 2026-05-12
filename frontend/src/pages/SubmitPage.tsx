@@ -74,7 +74,7 @@ export default function SubmitPage() {
           <p className="opacity-90">
             Domains are on a whitelist for the public release.{' '}
             <a
-              href="https://github.com/anthony1x6000/gdg-yugo/blob/e46c0f109881df2cac968c3c64390cf33b678cc3/backend/pusher/src/index.ts#L12"
+              href="https://github.com/anthony1x6000/gdg-yugo/blob/main/backend/pusher/src/index.ts#L12"
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-white/80"
