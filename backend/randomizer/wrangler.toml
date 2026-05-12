@@ -9,7 +9,7 @@ database_name = "gsrsites"
 database_id = "97bc1463-fffd-47ce-b6cd-1a392779fa13"
 
 [vars]
-FILTER_URL = "http://filter.anthonyis.online:8789/"
+FILTER_URL = "http://filter.anthonyis.online/"
 
 [[r2_buckets]]
 binding = "SCREENSHOTS"

@@ -57,7 +57,7 @@ wrangler deploy
 
 ## Local Development
 
-1.  **Start Filter**: `cd backend/filter && pnpm run dev --port 8787`
+1.  **Start Filter**: `cd backend/filter && pnpm run dev --port 8789`
 2.  **Initialize Local D1**: `cd backend/randomizer && wrangler d1 execute gsrsites --local --file=schema.sql`
 3.  **Start Randomizer**: `cd backend/randomizer && pnpm run dev`
-4.  **Start Pusher**: `cd backend/pusher && pnpm run dev --port 8789`
+4.  **Start Pusher**: `cd backend/pusher && pnpm run dev --port 8788`
