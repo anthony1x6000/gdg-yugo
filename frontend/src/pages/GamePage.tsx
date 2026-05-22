@@ -150,21 +150,4 @@ export default function GamePage() {
     </div>
   );
 }
-: `Wrong! It was ${data.correct_domain}`}
-                </span>
-              </div>
-              <Button
-                className="w-full"
-                variant="outline"
-                size="lg"
-                onClick={handleNext}
-              >
-                Next Site
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+
